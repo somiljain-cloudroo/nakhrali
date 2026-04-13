@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.production
+.env.*.local
+
 # Claude Code — local skills, settings, memory (never commit)
 .claude/
 
