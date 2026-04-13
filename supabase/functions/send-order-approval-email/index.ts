@@ -87,7 +87,7 @@ Deno.serve(async (req: Request) => {
 
     const requestBody = {
       personalizations: [{ to: [{ email: customerEmail }] }],
-      from: { email: "somiljain@aol.com", name: "CloudrooFoods" },
+      from: { email: "somiljain@aol.com", name: "Nakhrali" },
       content: [{ type: "text/html", value: emailHtml }],
       subject: `Order #${order.order_number} Approved`,
     };

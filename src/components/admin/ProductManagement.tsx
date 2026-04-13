@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, RefreshCw, Upload } from "lucide-react";
+import { Plus, Edit, Trash2, RefreshCw, Upload, ImagePlus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Papa from "papaparse";
 
@@ -65,6 +65,7 @@ export const ProductManagement = () => {
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { toast } = useToast();
 
@@ -222,6 +223,25 @@ export const ProductManagement = () => {
         description: "Failed to delete product",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setIsImageUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage
+        .from("products")
+        .upload(fileName, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("products").getPublicUrl(fileName);
+      setFormData((prev) => ({ ...prev, image_url: data.publicUrl }));
+      toast({ title: "Image uploaded" });
+    } catch (error) {
+      toast({ title: "Upload failed", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
@@ -473,28 +493,50 @@ export const ProductManagement = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="image_url">Image URL</Label>
+                    <Label>Product Image</Label>
+                    {formData.image_url ? (
+                      <div className="relative mt-1 rounded-lg overflow-hidden border border-border">
+                        <img
+                          src={formData.image_url}
+                          alt="Preview"
+                          className="w-full h-36 object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, image_url: "" })}
+                          className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/80"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="mt-1 flex flex-col items-center justify-center h-36 rounded-lg border-2 border-dashed border-border cursor-pointer hover:bg-muted/40 transition-colors">
+                        {isImageUploading ? (
+                          <p className="text-xs text-muted-foreground">Uploading…</p>
+                        ) : (
+                          <>
+                            <ImagePlus className="h-8 w-8 text-muted-foreground mb-2" />
+                            <p className="text-xs text-muted-foreground">Click to upload photo</p>
+                            <p className="text-[10px] text-muted-foreground/60 mt-0.5">JPG, PNG, WEBP</p>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                        />
+                      </label>
+                    )}
                     <Input
-                      id="image_url"
-                      placeholder="https://..."
+                      className="mt-2 text-xs"
+                      placeholder="Or paste image URL…"
                       value={formData.image_url}
                       onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                     />
                   </div>
                 </div>
-
-                {/* Image preview */}
-                {formData.image_url && (
-                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
-                    <img
-                      src={formData.image_url}
-                      alt="Preview"
-                      className="h-16 w-16 rounded-lg object-cover border border-border shrink-0"
-                      onError={(e) => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
-                    <p className="text-xs text-muted-foreground break-all">{formData.image_url}</p>
-                  </div>
-                )}
 
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
