@@ -454,17 +454,19 @@ export const ProductManagement = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="unit">Unit</Label>
-                    <Select 
-                      value={formData.unit} 
+                    <Select
+                      value={formData.unit}
                       onValueChange={(value) => setFormData({ ...formData, unit: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="piece">Piece</SelectItem>
+                        <SelectItem value="set">Set</SelectItem>
                         <SelectItem value="each">Each</SelectItem>
+                        <SelectItem value="pair">Pair</SelectItem>
                         <SelectItem value="kg">Kilogram</SelectItem>
-                        <SelectItem value="lb">Pound</SelectItem>
                         <SelectItem value="case">Case</SelectItem>
                         <SelectItem value="box">Box</SelectItem>
                       </SelectContent>
@@ -474,11 +476,25 @@ export const ProductManagement = () => {
                     <Label htmlFor="image_url">Image URL</Label>
                     <Input
                       id="image_url"
+                      placeholder="https://..."
                       value={formData.image_url}
                       onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                     />
                   </div>
                 </div>
+
+                {/* Image preview */}
+                {formData.image_url && (
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
+                    <img
+                      src={formData.image_url}
+                      alt="Preview"
+                      className="h-16 w-16 rounded-lg object-cover border border-border shrink-0"
+                      onError={(e) => { (e.target as HTMLImageElement).src = ""; (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                    <p className="text-xs text-muted-foreground break-all">{formData.image_url}</p>
+                  </div>
+                )}
 
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -546,9 +562,9 @@ export const ProductManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-14"></TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>SKU</TableHead>
-                <TableHead>Brand</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
@@ -559,9 +575,21 @@ export const ProductManagement = () => {
             <TableBody>
               {products.map((product) => (
                 <TableRow key={product.id}>
+                  <TableCell>
+                    {product.image_url ? (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="h-10 w-10 rounded-lg object-cover border border-border"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground text-xs">
+                        —
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>{product.sku}</TableCell>
-                  <TableCell>{product.brand}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{product.sku}</TableCell>
                   <TableCell>{product.categories?.name}</TableCell>
                   <TableCell>${product.price.toFixed(2)}</TableCell>
                   <TableCell>{product.stock_quantity}</TableCell>

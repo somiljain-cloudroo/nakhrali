@@ -13,7 +13,25 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['Jost', 'system-ui', '-apple-system', 'sans-serif'],
+      },
       colors: {
+        gold: {
+          DEFAULT: '#b8960c',
+          light: '#d4aa1a',
+          pale: '#f5e9c0',
+          dark: '#8a6e08',
+          muted: '#9a8e7a',
+        },
+        ink: {
+          DEFAULT: '#1a1209',
+          medium: '#5a4e3a',
+          faint: '#9a8e7a',
+        },
+        cream: '#faf8f2',
+
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -65,9 +83,11 @@ export default {
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',
-        'gradient-warm': 'var(--gradient-warm)', 
+        'gradient-warm': 'var(--gradient-warm)',
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-card': 'var(--gradient-card)',
+        'gradient-gold': 'linear-gradient(135deg, #b8960c, #d4aa1a)',
+        'gradient-gold-radial': 'radial-gradient(ellipse at 50% 0%, hsl(44 87% 38% / 0.15), transparent 70%)',
       },
       boxShadow: {
         'product': 'var(--shadow-product)',
@@ -81,25 +101,23 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        // 21st.dev aurora animation
+        aurora: {
+          from: { backgroundPosition: "50% 50%, 50% 50%" },
+          to: { backgroundPosition: "350% 50%, 350% 50%" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        aurora: "aurora 60s linear infinite",
       },
     },
   },

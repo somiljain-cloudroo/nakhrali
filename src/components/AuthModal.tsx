@@ -223,7 +223,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       <DialogContent className="sm:max-w-md bg-gradient-card">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-semibold bg-gradient-primary bg-clip-text text-transparent">
-            Cloudroo Food Supplies Account
+            Nakhrali Account
           </DialogTitle>
         </DialogHeader>
 

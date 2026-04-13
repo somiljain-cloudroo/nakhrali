@@ -1,133 +1,127 @@
+/* ─── Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* ── Core surfaces — warm white/cream ── */
+    --background: 36 33% 97%;
+    --foreground: 30 15% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 30 15% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 30 15% 9%;
 
-    --primary: 216 85% 34%;
+    /* ── Brand — gold ── */
+    --primary: 44 76% 38%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 216 85% 45%;
+    --primary-glow: 44 76% 48%;
 
-    --secondary: 25 88% 55%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 36 25% 93%;
+    --secondary-foreground: 30 15% 9%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 25 88% 55%;
+    --accent: 44 76% 38%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 120 60% 50%;
+    /* ── UI states ── */
+    --muted: 36 25% 94%;
+    --muted-foreground: 35 10% 50%;
+
+    --success: 148 58% 38%;
     --success-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 4 70% 48%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 216 85% 34%;
+    --border: 38 20% 86%;
+    --input: 38 20% 86%;
+    --ring: 44 76% 38%;
 
-    /* Custom food industry design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-warm: linear-gradient(135deg, hsl(var(--accent)), hsl(25 95% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(216 85% 34%), hsl(25 88% 55%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(216 20% 98%));
-    
-    --shadow-product: 0 4px 20px hsl(216 85% 34% / 0.1);
-    --shadow-cart: 0 10px 40px hsl(216 85% 34% / 0.15);
-    --shadow-glow: 0 0 30px hsl(var(--accent) / 0.3);
+    /* ── Radius ── */
+    --radius: 0.75rem;
 
-    --radius: 0.5rem;
+    /* ── Gradients ── */
+    --gradient-primary: linear-gradient(135deg, hsl(44 76% 30%), hsl(44 76% 44%));
+    --gradient-warm: linear-gradient(135deg, hsl(36 85% 52%), hsl(44 92% 62%));
+    --gradient-hero: linear-gradient(145deg, hsl(44 76% 38%) 0%, hsl(36 85% 52%) 50%, hsl(30 80% 46%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(36 20% 97%));
 
-    --sidebar-background: 0 0% 98%;
+    /* ── Shadows ── */
+    --shadow-xs: 0 1px 3px hsl(30 15% 9% / 0.06);
+    --shadow-sm: 0 2px 8px hsl(30 15% 9% / 0.08);
+    --shadow-md: 0 4px 16px hsl(30 15% 9% / 0.10);
+    --shadow-product: 0 6px 28px hsl(30 15% 9% / 0.10);
+    --shadow-cart: 0 12px 48px hsl(30 15% 9% / 0.14);
+    --shadow-glow: 0 0 32px hsl(44 76% 38% / 0.22);
+    --shadow-nav: 0 4px 24px hsl(30 15% 9% / 0.08);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 216 85% 45%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 216 85% 55%;
-
-    --secondary: 25 88% 65%;
-    --secondary-foreground: 222.2 84% 4.9%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 25 88% 65%;
-    --accent-foreground: 222.2 84% 4.9%;
-
-    --success: 120 60% 60%;
-    --success-foreground: 222.2 84% 4.9%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 216 85% 45%;
-
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-warm: linear-gradient(135deg, hsl(var(--accent)), hsl(25 95% 75%));
-    --gradient-hero: linear-gradient(135deg, hsl(216 85% 45%), hsl(25 88% 65%));
-    --gradient-card: linear-gradient(180deg, hsl(222.2 84% 4.9%), hsl(217.2 32.6% 15%));
-    
-    --shadow-product: 0 4px 20px hsl(0 0% 0% / 0.3);
-    --shadow-cart: 0 10px 40px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 30px hsl(var(--accent) / 0.4);
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    /* ── Sidebar ── */
+    --sidebar-background: 36 25% 95%;
+    --sidebar-foreground: 30 15% 9%;
+    --sidebar-primary: 44 76% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 36 25% 92%;
+    --sidebar-accent-foreground: 30 15% 9%;
+    --sidebar-border: 38 20% 86%;
+    --sidebar-ring: 44 76% 38%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    font-family: 'Jost', system-ui, -apple-system, sans-serif;
   }
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Jost', system-ui, -apple-system, sans-serif;
   }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+}
+
+@layer utilities {
+  .gradient-primary { background: var(--gradient-primary); }
+  .gradient-warm    { background: var(--gradient-warm); }
+  .gradient-hero    { background: var(--gradient-hero); }
+  .gradient-card    { background: var(--gradient-card); }
+
+  .shadow-nav     { box-shadow: var(--shadow-nav); }
+  .shadow-product { box-shadow: var(--shadow-product); }
+  .shadow-cart    { box-shadow: var(--shadow-cart); }
+  .shadow-glow    { box-shadow: var(--shadow-glow); }
+
+  .font-display   { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+  .text-balance { text-wrap: balance; }
+
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  .shimmer {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--card)) 50%, hsl(var(--muted)) 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.6s infinite linear;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up { animation: fade-up 0.4s ease-out both; }
 }

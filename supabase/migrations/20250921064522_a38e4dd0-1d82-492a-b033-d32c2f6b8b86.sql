@@ -37,6 +37,9 @@ INSERT INTO public.contact_account_relationships (contact_id, account_id, relati
 -- Government Admin - Primary owner of Government Services
 ('55555555-5555-5555-5555-555555555555', (SELECT id FROM public.accounts WHERE account_number = 'ACC-2025-0003'), 'owner', true, true, true, true);
 
+-- Make customer_id nullable to support both individual and account-based orders
+ALTER TABLE public.orders ALTER COLUMN customer_id DROP NOT NULL;
+
 -- Create some sample orders to demonstrate different scenarios
 -- Individual order from a contact
 INSERT INTO public.orders (order_number, customer_id, subtotal, tax_amount, total_amount, notes, status) VALUES
