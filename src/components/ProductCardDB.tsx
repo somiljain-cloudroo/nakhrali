@@ -47,9 +47,10 @@ type Product = Database["public"]["Tables"]["products"]["Row"] & {
 interface ProductCardDBProps {
   product: Product;
   onAddToCart: (product: Product, quantity: number) => void;
+  onProductClick?: (product: Product) => void;
 }
 
-export const ProductCardDB = ({ product, onAddToCart }: ProductCardDBProps) => {
+export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductCardDBProps) => {
   const { isAuthenticated } = useAuth();
   const minQty = product.min_order_quantity || 1;
   const [quantity, setQuantity] = useState(minQty);
@@ -134,8 +135,11 @@ export const ProductCardDB = ({ product, onAddToCart }: ProductCardDBProps) => {
         />
       </div>
 
-      {/* ── Image area (21st.dev ProductCardImages) ── */}
-      <div className="relative rounded-t-2xl overflow-hidden">
+      {/* ── Image area (21st.dev ProductCardImages) — click opens detail modal ── */}
+      <div
+        className={cn("relative rounded-t-2xl overflow-hidden", onProductClick && "cursor-pointer")}
+        onClick={() => onProductClick?.(product)}
+      >
         {productImages.length > 0 ? (
           <ProductCardImages
             productImages={productImages}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { ProductCardDB } from "@/components/ProductCardDB";
+import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { Cart } from "@/components/Cart";
 import { AuthModal } from "@/components/AuthModal";
@@ -32,6 +33,7 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showAuthModal, setShowAuthModal] = useState(true);
+  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const { toast } = useToast();
   const { user, profile, loading: authLoading, isAuthenticated } = useAuth();
@@ -215,7 +217,11 @@ const Index = () => {
                   key={product.id}
                   variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
                 >
-                  <ProductCardDB product={product} onAddToCart={handleAddToCart} />
+                  <ProductCardDB
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                    onProductClick={setDetailProduct}
+                  />
                 </motion.div>
               ))}
             </motion.div>
@@ -248,6 +254,14 @@ const Index = () => {
           )}
         </div>
       </section>
+
+      {/* ── Product detail modal ── */}
+      <ProductDetailModal
+        product={detailProduct}
+        isOpen={!!detailProduct}
+        onClose={() => setDetailProduct(null)}
+        onAddToCart={handleAddToCart}
+      />
 
       {/* ── Floating Bag FAB ── */}
       <Cart
