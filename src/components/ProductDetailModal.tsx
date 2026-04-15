@@ -113,7 +113,7 @@ export function ProductDetailModal({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-contain p-4"
                   />
                 ) : (
                   <motion.div
