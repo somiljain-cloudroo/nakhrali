@@ -13,13 +13,19 @@ import { useRef } from "react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
+import {
+  ProductCardImages,
+  ProductColorsThumbs,
+  useSetActiveProduct,
+  type ProductImagesProps,
+} from "@/components/ui/product-card";
 
 interface ColorImage {
   color: string;
   image_url: string;
 }
 
-// Matches the swatch map in ProductManagement
+// CSS swatch values — mirrors ProductManagement
 const COLOR_SWATCHES: Record<string, string> = {
   "Gold":            "#C9A84C",
   "Rose Gold":       "#B76E79",
@@ -49,16 +55,28 @@ export const ProductCardDB = ({ product, onAddToCart }: ProductCardDBProps) => {
   const [quantity, setQuantity] = useState(minQty);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Colour-image switcher: default to first color that has an image
-  const colorImages: ColorImage[] = Array.isArray(product.color_images)
+  // Build ProductImagesProps[] from color_images (one image per colour)
+  // If no colour images, fall back to the single image_url
+  const rawColorImages: ColorImage[] = Array.isArray(product.color_images)
     ? (product.color_images as ColorImage[]).filter((ci) => ci.image_url)
     : [];
-  const [activeColor, setActiveColor] = useState<string | null>(
-    colorImages[0]?.color ?? null
-  );
-  const displayImage =
-    colorImages.find((ci) => ci.color === activeColor)?.image_url ??
-    product.image_url;
+
+  const productImages: ProductImagesProps[] = rawColorImages.length > 0
+    ? rawColorImages.map((ci) => ({
+        id: `${product.id}-${ci.color}`,
+        color: ci.color,
+        // pass same URL twice so hover effect is a subtle re-render; swap for real hover shot when available
+        images: [ci.image_url, ci.image_url],
+      }))
+    : product.image_url
+      ? [{ id: product.id, color: "default", images: [product.image_url, product.image_url] }]
+      : [];
+
+  const cssSwatches = rawColorImages.map((ci) => COLOR_SWATCHES[ci.color] ?? "#ccc");
+  const colorLabels  = rawColorImages.map((ci) => ci.color);
+
+  // 21st.dev useSetActiveProduct hook drives colour + hover state
+  const { activeColor, activeImage, handleColorChange, handleMouse } = useSetActiveProduct();
 
   /* ── 21st.dev ProductHighlightCard: useMotionValue + useSpring tilt ── */
   // Start at centre (175) so rotateX/rotateY both resolve to 0 at rest
@@ -116,78 +134,61 @@ export const ProductCardDB = ({ product, onAddToCart }: ProductCardDBProps) => {
         />
       </div>
 
-      {/* ── Image area ── */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted/30 rounded-t-2xl">
-        {displayImage ? (
-          <motion.img
-            key={displayImage}
-            src={displayImage}
-            alt={product.name}
-            loading="lazy"
-            style={{ translateZ: 20 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.25 }}
-            whileHover={{ scale: 1.06 }}
-            className="h-full w-full object-cover"
+      {/* ── Image area (21st.dev ProductCardImages) ── */}
+      <div className="relative rounded-t-2xl overflow-hidden">
+        {productImages.length > 0 ? (
+          <ProductCardImages
+            productImages={productImages}
+            activeColor={activeColor}
+            activeImage={activeImage}
+            handleMouse={handleMouse}
+            className="rounded-t-2xl"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex flex-col items-center justify-center p-5 text-center">
-            <motion.div
-              style={{ translateZ: 30 }}
-              className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 shadow-md"
-            >
+          <div className="aspect-[4/3] bg-gradient-to-br from-primary/20 to-purple-500/20 flex flex-col items-center justify-center p-5 text-center">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 shadow-md">
               <Gem className="h-6 w-6 text-primary" />
-            </motion.div>
+            </div>
             {product.sku && <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{product.sku}</p>}
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.name}</p>
           </div>
         )}
 
         {/* Category badge */}
-        <motion.div style={{ translateZ: 40 }} className="absolute top-2.5 left-2.5">
+        <div className="absolute top-2.5 left-2.5 z-10">
           <Badge variant="secondary" className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-background/90 backdrop-blur-sm border border-border/40">
             {product.category?.name || "Jewellery"}
           </Badge>
-        </motion.div>
+        </div>
 
-        {/* Out of stock */}
+        {/* Out of stock overlay */}
         {!isInStock && (
-          <div className="absolute inset-0 bg-background/55 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/55 backdrop-blur-[2px] flex items-center justify-center z-10">
             <Badge variant="destructive" className="font-semibold px-3 py-1 rounded-full shadow-sm">Sold Out</Badge>
           </div>
         )}
 
-        {/* Low stock */}
+        {/* Low stock badge */}
         {stockLow && isInStock && (
-          <motion.div style={{ translateZ: 35 }} className="absolute bottom-2.5 right-2.5">
+          <div className="absolute bottom-2.5 right-2.5 z-10">
             <div className="flex items-center gap-1 bg-amber-500/90 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm">
               <AlertCircle className="h-2.5 w-2.5" />
               Only {product.stock_quantity} left
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
 
-      {/* ── Colour swatches ── */}
-      {colorImages.length > 1 && (
-        <div className="flex gap-1.5 px-3 pt-2 pb-0">
-          {colorImages.map((ci) => (
-            <button
-              key={ci.color}
-              type="button"
-              title={ci.color}
-              onClick={() => setActiveColor(ci.color)}
-              className={cn(
-                "h-5 w-5 rounded-full border-2 transition-all duration-150 cursor-pointer",
-                activeColor === ci.color
-                  ? "border-primary scale-110 shadow-md"
-                  : "border-transparent hover:border-primary/50"
-              )}
-              style={{ background: COLOR_SWATCHES[ci.color] ?? "#ccc" }}
-            />
-          ))}
-        </div>
+      {/* ── Colour swatches (21st.dev ProductColorsThumbs) ── */}
+      {cssSwatches.length > 1 && (
+        <ProductColorsThumbs
+          productId={product.id}
+          productColors={cssSwatches}
+          colorLabels={colorLabels}
+          activeColor={activeColor}
+          setActiveColor={handleColorChange}
+          className="px-4 pt-2 pb-0"
+        />
       )}
 
       {/* ── Content ── */}
