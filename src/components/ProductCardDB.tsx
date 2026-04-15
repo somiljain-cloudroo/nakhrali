@@ -14,8 +14,28 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
 
+interface ColorImage {
+  color: string;
+  image_url: string;
+}
+
+// Matches the swatch map in ProductManagement
+const COLOR_SWATCHES: Record<string, string> = {
+  "Gold":            "#C9A84C",
+  "Rose Gold":       "#B76E79",
+  "Silver":          "#A8A9AD",
+  "Antique Gold":    "#8B7536",
+  "Oxidised Silver": "#6B6B6B",
+  "White Gold":      "#E8E4DC",
+  "Two-tone":        "linear-gradient(135deg, #C9A84C 50%, #A8A9AD 50%)",
+  "Kundan":          "linear-gradient(135deg, #D4AF37 50%, #1B6CA8 50%)",
+  "Meenakari":       "linear-gradient(135deg, #D4AF37 33%, #E74C3C 33% 66%, #27AE60 66%)",
+  "Black":           "#1A1A1A",
+};
+
 type Product = Database["public"]["Tables"]["products"]["Row"] & {
   category?: Database["public"]["Tables"]["categories"]["Row"];
+  color_images?: ColorImage[];
 };
 
 interface ProductCardDBProps {
@@ -28,6 +48,17 @@ export const ProductCardDB = ({ product, onAddToCart }: ProductCardDBProps) => {
   const minQty = product.min_order_quantity || 1;
   const [quantity, setQuantity] = useState(minQty);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Colour-image switcher: default to first color that has an image
+  const colorImages: ColorImage[] = Array.isArray(product.color_images)
+    ? (product.color_images as ColorImage[]).filter((ci) => ci.image_url)
+    : [];
+  const [activeColor, setActiveColor] = useState<string | null>(
+    colorImages[0]?.color ?? null
+  );
+  const displayImage =
+    colorImages.find((ci) => ci.color === activeColor)?.image_url ??
+    product.image_url;
 
   /* ── 21st.dev ProductHighlightCard: useMotionValue + useSpring tilt ── */
   // Start at centre (175) so rotateX/rotateY both resolve to 0 at rest
@@ -87,14 +118,17 @@ export const ProductCardDB = ({ product, onAddToCart }: ProductCardDBProps) => {
 
       {/* ── Image area ── */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted/30 rounded-t-2xl">
-        {product.image_url ? (
+        {displayImage ? (
           <motion.img
-            src={product.image_url}
+            key={displayImage}
+            src={displayImage}
             alt={product.name}
             loading="lazy"
             style={{ translateZ: 20 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
             whileHover={{ scale: 1.06 }}
-            transition={{ duration: 0.4 }}
             className="h-full w-full object-cover"
           />
         ) : (
@@ -134,6 +168,27 @@ export const ProductCardDB = ({ product, onAddToCart }: ProductCardDBProps) => {
           </motion.div>
         )}
       </div>
+
+      {/* ── Colour swatches ── */}
+      {colorImages.length > 1 && (
+        <div className="flex gap-1.5 px-3 pt-2 pb-0">
+          {colorImages.map((ci) => (
+            <button
+              key={ci.color}
+              type="button"
+              title={ci.color}
+              onClick={() => setActiveColor(ci.color)}
+              className={cn(
+                "h-5 w-5 rounded-full border-2 transition-all duration-150 cursor-pointer",
+                activeColor === ci.color
+                  ? "border-primary scale-110 shadow-md"
+                  : "border-transparent hover:border-primary/50"
+              )}
+              style={{ background: COLOR_SWATCHES[ci.color] ?? "#ccc" }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* ── Content ── */}
       <div className="flex flex-col flex-1 p-4 gap-3" style={{ transform: "translateZ(10px)" }}>
