@@ -78,28 +78,25 @@ export function ProductDetailModal({
     <DialogPrimitive.Root open={isOpen} onOpenChange={onClose}>
       <DialogPrimitive.Portal>
         {/* ── Backdrop: dark blur ── */}
-        <DialogPrimitive.Overlay asChild>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md"
-          />
-        </DialogPrimitive.Overlay>
+        <DialogPrimitive.Overlay
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md
+                     data-[state=open]:animate-in data-[state=closed]:animate-out
+                     data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0
+                     duration-300"
+        />
 
         {/* ── Modal ── */}
-        <DialogPrimitive.Content asChild>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2
-                       w-[calc(100vw-2rem)] max-w-5xl max-h-[90vh]
-                       overflow-hidden rounded-2xl shadow-2xl
-                       grid grid-cols-1 md:grid-cols-[3fr_2fr]"
-          >
+        <DialogPrimitive.Content
+          className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2
+                     w-[calc(100vw-2rem)] max-w-5xl max-h-[90vh]
+                     overflow-hidden rounded-2xl shadow-2xl outline-none
+                     grid grid-cols-1 md:grid-cols-[3fr_2fr]
+                     data-[state=open]:animate-in data-[state=closed]:animate-out
+                     data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0
+                     data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95
+                     data-[state=open]:slide-in-from-top-[2%] duration-300"
+        >
+          <>
             {/* ─────────────────────────────────────────────────────────── */}
             {/* LEFT — full-bleed image panel                               */}
             {/* ─────────────────────────────────────────────────────────── */}
@@ -351,7 +348,7 @@ export function ProductDetailModal({
                 )}
               </div>
             </div>
-          </motion.div>
+          </>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
