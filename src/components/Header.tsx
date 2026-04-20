@@ -60,9 +60,11 @@ export const Header = ({ cartCount = 0, onCartClick, onLoginClick }: HeaderProps
 
         {/* ── Logo ── */}
         <Link to="/" className="flex items-center gap-2.5 shrink-0 group cursor-pointer">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center transition-all duration-300 group-hover:bg-primary/20">
-            <span className="text-xs font-bold text-primary">N</span>
-          </div>
+          <img
+            src="/nakhrali-logo.jpg"
+            alt="Nakhrali"
+            className="h-10 w-10 rounded-full object-cover border border-primary/20 bg-white transition-transform duration-300 group-hover:scale-105"
+          />
           <div className="hidden sm:block">
             <p className="text-sm font-semibold leading-none text-foreground tracking-tight">NAKHRALI</p>
             <p className="text-[10px] text-muted-foreground tracking-wide mt-0.5">Heritage Jewellery</p>

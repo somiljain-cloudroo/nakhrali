@@ -32,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, RefreshCw, Upload, ImagePlus, X, Check, Palette } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import Papa from "papaparse";
 
 // ── Color options for Indian jewellery ──────────────────────────────────────
@@ -92,6 +93,7 @@ interface FormData {
   unit: string;
   image_url: string;
   color_images: ColorImage[];
+  is_active: boolean;
 }
 
 export const ProductManagement = () => {
@@ -118,6 +120,7 @@ export const ProductManagement = () => {
     unit: "each",
     image_url: "",
     color_images: [],
+    is_active: true,
   });
 
   const [formData, setFormData] = useState<FormData>(emptyForm());
@@ -172,6 +175,7 @@ export const ProductManagement = () => {
       unit: product.unit,
       image_url: product.image_url || "",
       color_images: product.color_images || [],
+      is_active: product.is_active,
     });
     setIsDialogOpen(true);
   };
@@ -245,6 +249,7 @@ export const ProductManagement = () => {
         unit: formData.unit,
         image_url: primaryImage,
         color_images: formData.color_images as unknown as typeof import("@/integrations/supabase/types").Json,
+        is_active: formData.is_active,
       };
 
       let error;
@@ -497,6 +502,21 @@ export const ProductManagement = () => {
                       <SelectItem value="box">Box</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Active toggle */}
+                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <div>
+                    <Label htmlFor="is_active" className="text-sm font-medium">Active</Label>
+                    <p className="text-xs text-muted-foreground">
+                      When off, this product is hidden from the storefront and Meta catalogue.
+                    </p>
+                  </div>
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                  />
                 </div>
 
                 {/* ── Color & Images section ─────────────────────────────── */}
