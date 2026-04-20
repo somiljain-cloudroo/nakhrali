@@ -8,6 +8,9 @@ verify_jwt = false
 
 [functions.get-all-contacts]
 verify_jwt = false
+
+[functions.meta-catalog-feed]
+verify_jwt = false
 [functions.send-order-approval-email]
 enabled = true
 verify_jwt = true
