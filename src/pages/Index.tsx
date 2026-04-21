@@ -32,6 +32,7 @@ interface CartItem {
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(true);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
@@ -144,7 +145,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header
         cartCount={cartCount}
-        onCartClick={() => {}}
+        onCartClick={() => setIsCartOpen(true)}
         onLoginClick={() => setShowAuthModal(true)}
       />
 
@@ -273,6 +274,8 @@ const Index = () => {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
         onCheckout={handleCheckout}
+        open={isCartOpen}
+        onOpenChange={setIsCartOpen}
         trigger={
           <div className="fixed bottom-6 right-6 z-40">
             <button
@@ -280,10 +283,7 @@ const Index = () => {
             >
               <ShoppingCart className="h-5 w-5 text-primary-foreground" />
               {cartCount > 0 && (
-                <span
-                  className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] flex items-center justify-center text-[11px] font-bold rounded-full px-1 shadow-sm"
-                  className="bg-background text-foreground border-2 border-background"
-                >
+                <span className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] flex items-center justify-center text-[11px] font-bold rounded-full px-1 shadow-sm bg-background text-foreground border-2 border-background">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )}

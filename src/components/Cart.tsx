@@ -20,10 +20,14 @@ interface CartProps {
   onRemoveItem: (id: string) => void;
   onCheckout: () => void;
   trigger: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigger }: CartProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigger, open: openProp, onOpenChange }: CartProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = openProp !== undefined ? openProp : internalOpen;
+  const setIsOpen = (v: boolean) => { setInternalOpen(v); onOpenChange?.(v); };
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 

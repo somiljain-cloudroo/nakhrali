@@ -108,16 +108,18 @@ export const OrderManagement = () => {
 
   const updateOrderStatus = async (orderId: string, newStatus: string, notes?: string) => {
     try {
-      const { error } = await supabase
+      const { data: updated, error } = await supabase
         .from("orders")
         .update({
           status: newStatus,
           ...(newStatus === 'approved' && { approved_at: new Date().toISOString(), approved_by: user?.id }),
           ...(notes && { notes })
         })
-        .eq("id", orderId);
+        .eq("id", orderId)
+        .select("id");
 
       if (error) throw error;
+      if (!updated || updated.length === 0) throw new Error("Update blocked — check admin permissions");
 
       if (newStatus === 'approved') {
         // The function is now self-contained and will fetch the customer email.
