@@ -34,7 +34,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /var/www/nakhrali
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
             npm ci
             VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }} \
             VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }} \
