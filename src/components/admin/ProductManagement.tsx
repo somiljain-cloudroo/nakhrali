@@ -42,16 +42,20 @@ interface ColorOption {
 }
 
 const JEWELLERY_COLORS: ColorOption[] = [
-  { value: "Gold",           swatch: "#C9A84C" },
-  { value: "Rose Gold",      swatch: "#B76E79" },
-  { value: "Silver",         swatch: "#A8A9AD" },
-  { value: "Antique Gold",   swatch: "#8B7536" },
-  { value: "Oxidised Silver",swatch: "#6B6B6B" },
-  { value: "White Gold",     swatch: "#E8E4DC" },
-  { value: "Two-tone",       swatch: "linear-gradient(135deg, #C9A84C 50%, #A8A9AD 50%)" },
-  { value: "Kundan",         swatch: "linear-gradient(135deg, #D4AF37 50%, #1B6CA8 50%)" },
-  { value: "Meenakari",      swatch: "linear-gradient(135deg, #D4AF37 33%, #E74C3C 33% 66%, #27AE60 66%)" },
-  { value: "Black",          swatch: "#1A1A1A" },
+  { value: "Pink",       swatch: "#F4A7B9" },
+  { value: "Teal",       swatch: "#008080" },
+  { value: "Purple",     swatch: "#7B4F9E" },
+  { value: "Green",      swatch: "#3A7D44" },
+  { value: "White",      swatch: "#F5F5F5" },
+  { value: "Beige",      swatch: "#D9C4A0" },
+  { value: "Multi",      swatch: "linear-gradient(135deg, #F4A7B9 20%, #7B4F9E 20% 40%, #3A7D44 40% 60%, #D4AF37 60% 80%, #1B6CA8 80%)" },
+  { value: "Golden",     swatch: "#C9A84C" },
+  { value: "Blue",       swatch: "#1B6CA8" },
+  { value: "Maroon",     swatch: "#800020" },
+  { value: "Yellow",     swatch: "#F2C94C" },
+  { value: "Brown",      swatch: "#7B4F2E" },
+  { value: "Orange",     swatch: "#E07B39" },
+  { value: "Silver",     swatch: "#A8A9AD" },
 ];
 
 interface ColorImage {
