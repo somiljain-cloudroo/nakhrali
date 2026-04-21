@@ -6,48 +6,7 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView } from 'framer-motion';
-import { ArrowRight, Gem } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-
-interface ShowcaseCard {
-  id: number;
-  title: string;
-  category: string;
-  delay: number;
-  className: string;          // absolute position + rotation
-  iconColor: string;
-  iconBg: string;
-}
-
-const showcaseCards: ShowcaseCard[] = [
-  {
-    id: 1,
-    title: 'Maharani',
-    category: 'Bridal Necklace',
-    delay: 0,
-    className: 'top-6 left-8 -rotate-6 z-0',
-    iconColor: 'text-amber-600',
-    iconBg: 'bg-amber-50',
-  },
-  {
-    id: 2,
-    title: 'Navaratna',
-    category: 'Nine Gems Set',
-    delay: 0.15,
-    className: 'top-0 right-8 rotate-5 z-0',
-    iconColor: 'text-rose-500',
-    iconBg: 'bg-rose-50',
-  },
-  {
-    id: 3,
-    title: 'Tara',
-    category: 'Ring Collection',
-    delay: 0.3,
-    className: 'top-32 left-1/2 -translate-x-1/2 z-10',
-    iconColor: 'text-primary',
-    iconBg: 'bg-primary/10',
-  },
-];
+import { ArrowRight } from 'lucide-react';
 
 interface HeroSectionProps {
   isAuthenticated: boolean;
@@ -206,58 +165,91 @@ export function HeroSection({ isAuthenticated, onBrowse, onSignIn, productCount,
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative hidden lg:block"
+            className="relative hidden lg:flex flex-col gap-6 items-center"
           >
-            {/* Fixed-height container so cards don't overflow */}
-            <div className="relative h-[520px] w-full">
+            {/* Row 1: Logo card (left) + Titli card (right) — side by side, no overlap */}
+            <div className="flex gap-5 w-full justify-center">
 
-              {showcaseCards.map((card) => (
-                <motion.div
-                  key={card.id}
-                  className={`absolute ${card.className} w-52`}
-                  animate={{ y: [0, -14, 0] }}
-                  transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: card.delay }}
-                >
-                  <div
-                    className="rounded-2xl overflow-hidden"
-                    style={{
-                      background: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      boxShadow: '0 8px 32px hsl(30 15% 9% / 0.10)',
-                    }}
-                  >
-                    {/* Image area */}
-                    <div
-                      className="h-40 flex items-center justify-center relative overflow-hidden"
-                      style={{ background: 'hsl(var(--muted))' }}
-                    >
-                      <div
-                        className="absolute inset-0 opacity-30"
-                        style={{ background: 'radial-gradient(ellipse at 50% 0%, hsl(44 76% 60%), transparent 70%)' }}
-                      />
-                      <div className={`relative z-10 w-16 h-16 rounded-full ${card.iconBg} flex items-center justify-center`}>
-                        <Gem className={`w-8 h-8 ${card.iconColor}`} />
-                      </div>
-                    </div>
-                    {/* Content */}
-                    <div className="p-4">
-                      <p className="text-[10px] uppercase tracking-[0.16em] mb-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                        {card.category}
-                      </p>
-                      <p className="font-display text-lg font-semibold leading-tight" style={{ color: 'hsl(var(--foreground))' }}>
-                        {card.title}
-                      </p>
-                    </div>
+              {/* Card 1 — Nakhrali logo */}
+              <motion.div
+                className="w-44 flex-shrink-0 -rotate-3"
+                animate={{ y: [0, -12, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0 }}
+              >
+                <div className="rounded-2xl overflow-hidden" style={{
+                  background: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  boxShadow: '0 8px 32px hsl(30 15% 9% / 0.12)',
+                }}>
+                  <div className="h-36 overflow-hidden bg-white flex items-center justify-center">
+                    <img src="/nakhrali-logo.jpg" alt="Nakhrali" className="w-full h-full object-cover" />
                   </div>
-                </motion.div>
-              ))}
+                  <div className="p-3">
+                    <p className="text-[9px] uppercase tracking-[0.18em]" style={{ color: 'hsl(var(--muted-foreground))' }}>Heritage Brand</p>
+                    <p className="font-display text-base font-semibold mt-0.5" style={{ color: 'hsl(var(--foreground))' }}>Nakhrali</p>
+                  </div>
+                </div>
+              </motion.div>
 
-              {/* Decorative gold circle behind cards */}
-              <div
-                className="absolute bottom-12 right-8 w-48 h-48 rounded-full opacity-10 pointer-events-none"
-                style={{ background: 'radial-gradient(circle, hsl(44 76% 50%), transparent 70%)' }}
-              />
+              {/* Card 2 — Titli (green bracelet) */}
+              <motion.div
+                className="w-44 flex-shrink-0 rotate-3"
+                animate={{ y: [0, -12, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+              >
+                <div className="rounded-2xl overflow-hidden" style={{
+                  background: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  boxShadow: '0 8px 32px hsl(30 15% 9% / 0.12)',
+                }}>
+                  <div className="h-36 overflow-hidden">
+                    <img src="/titli-green.png" alt="Titli" className="w-full h-full object-cover object-top" />
+                  </div>
+                  <div className="p-3">
+                    <p className="text-[9px] uppercase tracking-[0.18em]" style={{ color: 'hsl(var(--muted-foreground))' }}>Bangle</p>
+                    <p className="font-display text-base font-semibold mt-0.5" style={{ color: 'hsl(var(--foreground))' }}>Titli</p>
+                  </div>
+                </div>
+              </motion.div>
             </div>
+
+            {/* Card 3 — Empty / decorative, centred below */}
+            <motion.div
+              className="w-44 flex-shrink-0"
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+            >
+              <div className="rounded-2xl overflow-hidden" style={{
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border) / 0.6)',
+                boxShadow: '0 8px 32px hsl(30 15% 9% / 0.08)',
+              }}>
+                {/* Decorative mandala placeholder */}
+                <div className="h-36 flex items-center justify-center relative overflow-hidden" style={{ background: 'hsl(var(--muted) / 0.5)' }}>
+                  <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(ellipse at 50% 50%, hsl(44 76% 60%), transparent 70%)' }} />
+                  <svg viewBox="0 0 80 80" className="w-16 h-16 opacity-30" style={{ color: 'hsl(44 76% 38%)' }}>
+                    <circle cx="40" cy="40" r="35" fill="none" stroke="currentColor" strokeWidth="1" />
+                    <circle cx="40" cy="40" r="25" fill="none" stroke="currentColor" strokeWidth="0.75" />
+                    <circle cx="40" cy="40" r="15" fill="none" stroke="currentColor" strokeWidth="0.75" />
+                    <circle cx="40" cy="40" r="4" fill="currentColor" />
+                    {[0,45,90,135,180,225,270,315].map(a => (
+                      <line key={a} x1="40" y1="40"
+                        x2={40 + 33 * Math.cos(a * Math.PI / 180)}
+                        y2={40 + 33 * Math.sin(a * Math.PI / 180)}
+                        stroke="currentColor" strokeWidth="0.5" />
+                    ))}
+                  </svg>
+                </div>
+                <div className="p-3">
+                  <p className="text-[9px] uppercase tracking-[0.18em]" style={{ color: 'hsl(var(--muted-foreground))' }}>Coming Soon</p>
+                  <p className="font-display text-base font-semibold mt-0.5" style={{ color: 'hsl(var(--foreground) / 0.4)' }}>New Arrivals</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Decorative gold glow behind */}
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-32 rounded-full opacity-10 pointer-events-none blur-2xl"
+              style={{ background: 'radial-gradient(circle, hsl(44 76% 50%), transparent 70%)' }} />
           </motion.div>
 
         </div>
