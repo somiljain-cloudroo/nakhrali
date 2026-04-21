@@ -268,6 +268,21 @@ const Index = () => {
         onAddToCart={handleAddToCart}
       />
 
+      {/* ── Footer ── */}
+      <footer className="border-t py-8 mt-4" style={{ borderColor: "rgba(184,150,12,0.12)", background: "rgba(0,0,0,0.18)" }}>
+        <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-[10px] uppercase tracking-[0.22em]" style={{ color: "rgba(184,150,12,0.45)" }}>
+            nakhrali.com.au &nbsp;·&nbsp; Melbourne, Australia
+          </p>
+          <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(250,248,242,0.25)" }}>
+            &copy; 2026 Nakhrali. All rights reserved.
+          </p>
+          <p className="text-[10px] tracking-[0.2em] uppercase" style={{ fontFamily: "'Cormorant Garamond', serif", color: "rgba(184,150,12,0.4)" }}>
+            Bold · Elegant · You
+          </p>
+        </div>
+      </footer>
+
       {/* ── Floating Bag FAB ── */}
       <Cart
         items={cartItems}

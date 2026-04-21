@@ -18,6 +18,7 @@ import { OrderManagement } from "@/components/admin/OrderManagement";
 import { ProductManagement } from "@/components/admin/ProductManagement";
 import { AccountManagement } from "@/components/admin/AccountManagement";
 import { UserInvitation } from "@/components/admin/UserInvitation";
+import { UserManagement } from "@/components/admin/UserManagement";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { AccountContactRelationship } from "@/components/admin/AccountContactRelationship";
 
@@ -45,7 +46,8 @@ const AdminDashboard = () => {
     { id: "orders", label: "Orders", icon: ShoppingCart },
     { id: "products", label: "Products", icon: Package },
     { id: "accounts", label: "Accounts", icon: Building2 },
-    { id: "users", label: "Invite Users", icon: UserPlus },
+    { id: "users", label: "Users", icon: Users },
+    { id: "invite", label: "Invite Users", icon: UserPlus },
     { id: "account-contacts", label: "Account Contacts", icon: Settings },
   ];
 
@@ -60,6 +62,8 @@ const AdminDashboard = () => {
       case "accounts":
         return <AccountManagement />;
       case "users":
+        return <UserManagement />;
+      case "invite":
         return <UserInvitation />;
       case "account-contacts":
         return <AccountContactRelationship />;

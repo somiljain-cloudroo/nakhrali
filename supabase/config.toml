@@ -38,6 +38,9 @@ verify_jwt = false
 [functions.send-pending-approval-email]
 verify_jwt = false
 
+[functions.send-account-approved-email]
+verify_jwt = false
+
 [functions.send-order-approval-email]
 enabled = true
 verify_jwt = true
