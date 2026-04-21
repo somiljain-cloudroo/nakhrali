@@ -33,9 +33,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
   const { createOrder, loading } = useOrders();
   const { toast } = useToast();
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const tax = subtotal * 0.1; // 10% GST
-  const total = subtotal + tax;
+  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,13 +130,8 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
 
             {/* Pricing Breakdown */}
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal:</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>GST (10%):</span>
-                <span>${tax.toFixed(2)}</span>
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>GST included in price</span>
               </div>
               <Separator />
               <div className="flex justify-between font-semibold text-lg">

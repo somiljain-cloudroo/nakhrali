@@ -25,9 +25,7 @@ interface CartProps {
 export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigger }: CartProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.1;
-  const total = subtotal + tax;
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -141,12 +139,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigge
             <div className="px-5 py-4 border-t border-border/60 space-y-4 shrink-0 bg-muted/20">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Subtotal</span>
-                  <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>GST (10%)</span>
-                  <span className="font-medium text-foreground">${tax.toFixed(2)}</span>
+                  <span>GST included in price</span>
                 </div>
                 <Separator className="my-1" />
                 <div className="flex justify-between font-bold text-base">

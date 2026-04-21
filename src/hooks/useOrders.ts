@@ -44,8 +44,8 @@ export function useOrders() {
     try {
       // Calculate totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const taxAmount = subtotal * 0.1; // 10% GST
-      const totalAmount = subtotal + taxAmount;
+      const taxAmount = 0; // GST included in prices
+      const totalAmount = subtotal;
 
       // Generate order number
       const { data: orderNumberData, error: orderNumberError } = await supabase

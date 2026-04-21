@@ -46,6 +46,8 @@ const Index = () => {
   } = useProducts();
 
   const filteredProducts = getProductsByCategory(selectedCategory);
+  const activeProductCount = products.length;
+  const activeCategoryCount = new Set(products.map((p) => p.category_id).filter(Boolean)).size;
 
   const handleAddToCart = (product: Product, quantity: number) => {
     if (!isAuthenticated) {
@@ -164,6 +166,8 @@ const Index = () => {
         isAuthenticated={isAuthenticated}
         onBrowse={() => document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" })}
         onSignIn={() => setShowAuthModal(true)}
+        productCount={activeProductCount}
+        categoryCount={activeCategoryCount}
       />
 
       {/* ── Collection ── */}

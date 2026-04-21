@@ -53,9 +53,11 @@ interface HeroSectionProps {
   isAuthenticated: boolean;
   onBrowse: () => void;
   onSignIn: () => void;
+  productCount?: number;
+  categoryCount?: number;
 }
 
-export function HeroSection({ isAuthenticated, onBrowse, onSignIn }: HeroSectionProps) {
+export function HeroSection({ isAuthenticated, onBrowse, onSignIn, productCount, categoryCount }: HeroSectionProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const controls = useAnimation();
@@ -183,12 +185,12 @@ export function HeroSection({ isAuthenticated, onBrowse, onSignIn }: HeroSection
             {/* Stats */}
             <motion.div variants={itemVariants} className="flex items-center gap-8 pt-4">
               <div>
-                <p className="font-display text-3xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>26</p>
+                <p className="font-display text-3xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{productCount ?? '—'}</p>
                 <p className="text-xs uppercase tracking-[0.14em] mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>Pieces</p>
               </div>
               <div className="w-px h-10" style={{ background: 'hsl(var(--border))' }} />
               <div>
-                <p className="font-display text-3xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>6</p>
+                <p className="font-display text-3xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{categoryCount ?? '—'}</p>
                 <p className="text-xs uppercase tracking-[0.14em] mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>Collections</p>
               </div>
               <div className="w-px h-10" style={{ background: 'hsl(var(--border))' }} />
