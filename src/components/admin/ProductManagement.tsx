@@ -252,11 +252,20 @@ export const ProductManagement = () => {
         is_active: formData.is_active,
       };
 
-      let error;
+      let error: Error | null = null;
       if (editingProduct) {
-        ({ error } = await supabase.from("products").update(productData).eq("id", editingProduct.id));
+        const { data: rows, error: updateError } = await supabase
+          .from("products")
+          .update(productData)
+          .eq("id", editingProduct.id)
+          .select("id");
+        error = updateError;
+        if (!updateError && (!rows || rows.length === 0)) {
+          error = new Error("Update blocked — check your admin permissions");
+        }
       } else {
-        ({ error } = await supabase.from("products").insert(productData));
+        const { error: insertError } = await supabase.from("products").insert(productData);
+        error = insertError;
       }
 
       if (error) throw error;
