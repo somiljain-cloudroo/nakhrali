@@ -122,6 +122,9 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       }
 
       if (data.user) {
+        supabase.functions.invoke('send-pending-approval-email', {
+          body: { email: signUpData.email, name: signUpData.fullName },
+        });
         toast({
           title: "Account Created!",
           description: "Please check your email to verify your account.",
