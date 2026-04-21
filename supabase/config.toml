@@ -1,5 +1,28 @@
 project_id = "swfyybcczjkwjbddzfgd"
 
+[auth]
+site_url = "https://nakhrali.com.au"
+additional_redirect_urls = ["https://nakhrali.com.au", "https://nakhrali.com.au/**"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+
+[auth.email.template.confirmation]
+subject = "Confirm your Nakhrali account"
+content_path = "./supabase/emails/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Nakhrali password"
+content_path = "./supabase/emails/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Your Nakhrali sign-in link"
+content_path = "./supabase/emails/magic_link.html"
+
 [functions.send-invite]
 verify_jwt = false
 
@@ -11,13 +34,9 @@ verify_jwt = false
 
 [functions.meta-catalog-feed]
 verify_jwt = false
+
 [functions.send-order-approval-email]
 enabled = true
 verify_jwt = true
 import_map = "./functions/send-order-approval-email/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/send-order-approval-email/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/send-order-approval-email/*.html" ]
