@@ -269,15 +269,15 @@ const Index = () => {
       />
 
       {/* ── Footer ── */}
-      <footer className="border-t py-8 mt-4" style={{ borderColor: "rgba(184,150,12,0.12)", background: "rgba(0,0,0,0.18)" }}>
+      <footer className="border-t py-8 mt-4" style={{ borderColor: "rgba(184,150,12,0.25)", background: "#0f0d09" }}>
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-[10px] uppercase tracking-[0.22em]" style={{ color: "rgba(184,150,12,0.45)" }}>
+          <p className="text-[10px] uppercase tracking-[0.22em]" style={{ color: "rgba(184,150,12,0.7)" }}>
             nakhrali.com.au &nbsp;·&nbsp; Melbourne, Australia
           </p>
-          <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(250,248,242,0.25)" }}>
+          <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(250,248,242,0.55)" }}>
             &copy; 2026 Nakhrali. All rights reserved.
           </p>
-          <p className="text-[10px] tracking-[0.2em] uppercase" style={{ fontFamily: "'Cormorant Garamond', serif", color: "rgba(184,150,12,0.4)" }}>
+          <p className="text-[10px] tracking-[0.2em] uppercase" style={{ fontFamily: "'Cormorant Garamond', serif", color: "rgba(184,150,12,0.7)" }}>
             Bold · Elegant · You
           </p>
         </div>
