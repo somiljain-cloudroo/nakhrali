@@ -33,7 +33,13 @@ export function useOrders() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const createOrder = async (cartItems: CartItem[], notes?: string, accountId?: string): Promise<{ success: boolean; orderId?: string; order?: any; error?: string }> => {
+  interface ShippingInfo {
+    shippingPostcode?: string;
+    shippingMethod?: string;
+    shippingCost?: number;
+  }
+
+  const createOrder = async (cartItems: CartItem[], notes?: string, accountId?: string, shipping?: ShippingInfo): Promise<{ success: boolean; orderId?: string; order?: any; error?: string }> => {
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -45,7 +51,8 @@ export function useOrders() {
       // Calculate totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const taxAmount = 0; // GST included in prices
-      const totalAmount = subtotal;
+      const shippingCost = shipping?.shippingCost ?? 0;
+      const totalAmount = subtotal + shippingCost;
 
       // Generate order number
       const { data: orderNumberData, error: orderNumberError } = await supabase
@@ -64,6 +71,9 @@ export function useOrders() {
         tax_amount: Number(taxAmount.toFixed(2)),
         total_amount: Number(totalAmount.toFixed(2)),
         notes: notes || null,
+        shipping_postcode: shipping?.shippingPostcode || null,
+        shipping_method: shipping?.shippingMethod || null,
+        shipping_cost: Number((shippingCost).toFixed(2)),
       };
 
       const { data: order, error: orderError } = await supabase
