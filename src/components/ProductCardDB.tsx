@@ -25,18 +25,23 @@ interface ColorImage {
   image_url: string;
 }
 
-// CSS swatch values — mirrors ProductManagement
+// CSS swatch values — mirrors ProductManagement JEWELLERY_COLORS
 const COLOR_SWATCHES: Record<string, string> = {
-  "Gold":            "#C9A84C",
-  "Rose Gold":       "#B76E79",
-  "Silver":          "#A8A9AD",
-  "Antique Gold":    "#8B7536",
-  "Oxidised Silver": "#6B6B6B",
-  "White Gold":      "#E8E4DC",
-  "Two-tone":        "linear-gradient(135deg, #C9A84C 50%, #A8A9AD 50%)",
-  "Kundan":          "linear-gradient(135deg, #D4AF37 50%, #1B6CA8 50%)",
-  "Meenakari":       "linear-gradient(135deg, #D4AF37 33%, #E74C3C 33% 66%, #27AE60 66%)",
-  "Black":           "#1A1A1A",
+  "Pink":   "#F4A7B9",
+  "Teal":   "#008080",
+  "Purple": "#7B4F9E",
+  "Green":  "#3A7D44",
+  "White":  "#F5F5F5",
+  "Beige":  "#D9C4A0",
+  "Multi":  "linear-gradient(135deg, #F4A7B9 20%, #7B4F9E 20% 40%, #3A7D44 40% 60%, #D4AF37 60% 80%, #1B6CA8 80%)",
+  "Kundan": "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, #aee6ff 25%, rgba(255,255,255,0.8) 45%, #ffb7d5 65%, rgba(255,255,255,0.95) 80%, #c8b6ff 100%)",
+  "Golden": "#C9A84C",
+  "Blue":   "#1B6CA8",
+  "Maroon": "#800000",
+  "Yellow": "#F5C518",
+  "Brown":  "#795548",
+  "Orange": "#E65100",
+  "Silver": "#A8A9AD",
 };
 
 type Product = Database["public"]["Tables"]["products"]["Row"] & {
