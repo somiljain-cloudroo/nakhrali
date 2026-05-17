@@ -41,6 +41,8 @@ interface ColorOption {
   swatch: string; // CSS color or gradient
 }
 
+const MULTI_PHOTO_COLORS = ["Multi"];
+
 const JEWELLERY_COLORS: ColorOption[] = [
   { value: "Pink",       swatch: "#F4A7B9" },
   { value: "Teal",       swatch: "#008080" },
@@ -49,6 +51,7 @@ const JEWELLERY_COLORS: ColorOption[] = [
   { value: "White",      swatch: "#F5F5F5" },
   { value: "Beige",      swatch: "#D9C4A0" },
   { value: "Multi",      swatch: "linear-gradient(135deg, #F4A7B9 20%, #7B4F9E 20% 40%, #3A7D44 40% 60%, #D4AF37 60% 80%, #1B6CA8 80%)" },
+  { value: "Kundan",     swatch: "linear-gradient(135deg, #D4AF37 50%, #C0392B 50%)" },
   { value: "Golden",     swatch: "#C9A84C" },
   { value: "Blue",       swatch: "#1B6CA8" },
   { value: "Maroon",     swatch: "#800020" },
@@ -61,6 +64,7 @@ const JEWELLERY_COLORS: ColorOption[] = [
 interface ColorImage {
   color: string;
   image_url: string;
+  image_urls?: string[]; // multiple photos for Multi / Kundan
 }
 
 interface Product {
@@ -192,8 +196,11 @@ export const ProductManagement = () => {
         // Remove this color (and its image)
         return { ...prev, color_images: prev.color_images.filter((ci) => ci.color !== color) };
       }
-      // Add with empty image_url
-      return { ...prev, color_images: [...prev.color_images, { color, image_url: "" }] };
+      // Add with empty image_url (multi-photo colours also get image_urls array)
+      const entry: ColorImage = MULTI_PHOTO_COLORS.includes(color)
+        ? { color, image_url: "", image_urls: [] }
+        : { color, image_url: "" };
+      return { ...prev, color_images: [...prev.color_images, entry] };
     });
   };
 
@@ -227,6 +234,40 @@ export const ProductManagement = () => {
     setFormData((prev) => {
       const updated = [...prev.color_images];
       updated[colorIndex] = { ...updated[colorIndex], image_url: "" };
+      return { ...prev, color_images: updated };
+    });
+  };
+
+  const handleMultiImageUpload = async (file: File, colorIndex: number) => {
+    setUploadingColorIndex(colorIndex);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("products").upload(fileName, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("products").getPublicUrl(fileName);
+      setFormData((prev) => {
+        const updated = [...prev.color_images];
+        const existing = updated[colorIndex];
+        const urls = existing.image_urls ?? (existing.image_url ? [existing.image_url] : []);
+        const newUrls = [...urls, data.publicUrl];
+        updated[colorIndex] = { ...existing, image_url: newUrls[0], image_urls: newUrls };
+        return { ...prev, color_images: updated, image_url: updated[0]?.image_url || prev.image_url };
+      });
+      toast({ title: "Image uploaded" });
+    } catch (error) {
+      toast({ title: "Upload failed", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setUploadingColorIndex(null);
+    }
+  };
+
+  const removeMultiImage = (colorIndex: number, imgIndex: number) => {
+    setFormData((prev) => {
+      const updated = [...prev.color_images];
+      const existing = updated[colorIndex];
+      const urls = (existing.image_urls ?? []).filter((_, i) => i !== imgIndex);
+      updated[colorIndex] = { ...existing, image_url: urls[0] ?? "", image_urls: urls };
       return { ...prev, color_images: updated };
     });
   };
@@ -538,7 +579,7 @@ export const ProductManagement = () => {
                     <Palette className="h-4 w-4 text-muted-foreground" />
                     <Label>Colours & Photos</Label>
                     <span className="text-xs text-muted-foreground">
-                      — select colours, then upload one photo per colour
+                      — select colours, upload one photo per colour (Multi supports multiple)
                     </span>
                   </div>
 
@@ -576,62 +617,115 @@ export const ProductManagement = () => {
                       {formData.color_images.map((ci, idx) => {
                         const col = JEWELLERY_COLORS.find((c) => c.value === ci.color);
                         const isUploading = uploadingColorIndex === idx;
+                        const isMulti = MULTI_PHOTO_COLORS.includes(ci.color);
+                        const multiUrls = ci.image_urls ?? (ci.image_url ? [ci.image_url] : []);
+
                         return (
-                          <div key={ci.color} className="space-y-1.5">
+                          <div key={ci.color} className={`space-y-1.5 ${isMulti ? "col-span-2" : ""}`}>
                             <div className="flex items-center gap-1.5">
                               <span
                                 className="h-3 w-3 rounded-full border border-black/10"
                                 style={{ background: col?.swatch }}
                               />
                               <span className="text-xs font-medium text-foreground">{ci.color}</span>
+                              {isMulti && (
+                                <span className="text-xs text-muted-foreground">— upload multiple photos</span>
+                              )}
                             </div>
-                            {ci.image_url ? (
-                              <div className="relative rounded-lg overflow-hidden border border-border">
-                                <img
-                                  src={ci.image_url}
-                                  alt={ci.color}
-                                  className="w-full h-28 object-cover"
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeColorImage(idx)}
-                                  className="absolute top-1 right-1 h-5 w-5 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/80"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
+
+                            {isMulti ? (
+                              /* Multi-photo grid */
+                              <div className="space-y-2">
+                                <div className="grid grid-cols-3 gap-2">
+                                  {multiUrls.map((url, imgIdx) => (
+                                    <div key={imgIdx} className="relative rounded-lg overflow-hidden border border-border">
+                                      <img
+                                        src={url}
+                                        alt={`${ci.color} ${imgIdx + 1}`}
+                                        className="w-full h-24 object-cover"
+                                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => removeMultiImage(idx, imgIdx)}
+                                        className="absolute top-1 right-1 h-5 w-5 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/80"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                  {/* Add photo slot */}
+                                  <label className="flex flex-col items-center justify-center h-24 rounded-lg border-2 border-dashed border-border cursor-pointer hover:bg-muted/40 transition-colors">
+                                    {isUploading ? (
+                                      <p className="text-xs text-muted-foreground">Uploading…</p>
+                                    ) : (
+                                      <>
+                                        <ImagePlus className="h-5 w-5 text-muted-foreground mb-1" />
+                                        <p className="text-[10px] text-muted-foreground">Add photo</p>
+                                      </>
+                                    )}
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) =>
+                                        e.target.files?.[0] && handleMultiImageUpload(e.target.files[0], idx)
+                                      }
+                                    />
+                                  </label>
+                                </div>
                               </div>
                             ) : (
-                              <label className="flex flex-col items-center justify-center h-28 rounded-lg border-2 border-dashed border-border cursor-pointer hover:bg-muted/40 transition-colors">
-                                {isUploading ? (
-                                  <p className="text-xs text-muted-foreground">Uploading…</p>
+                              /* Single-photo slot */
+                              <>
+                                {ci.image_url ? (
+                                  <div className="relative rounded-lg overflow-hidden border border-border">
+                                    <img
+                                      src={ci.image_url}
+                                      alt={ci.color}
+                                      className="w-full h-28 object-cover"
+                                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeColorImage(idx)}
+                                      className="absolute top-1 right-1 h-5 w-5 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/80"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
                                 ) : (
-                                  <>
-                                    <ImagePlus className="h-6 w-6 text-muted-foreground mb-1" />
-                                    <p className="text-xs text-muted-foreground">Upload photo</p>
-                                  </>
+                                  <label className="flex flex-col items-center justify-center h-28 rounded-lg border-2 border-dashed border-border cursor-pointer hover:bg-muted/40 transition-colors">
+                                    {isUploading ? (
+                                      <p className="text-xs text-muted-foreground">Uploading…</p>
+                                    ) : (
+                                      <>
+                                        <ImagePlus className="h-6 w-6 text-muted-foreground mb-1" />
+                                        <p className="text-xs text-muted-foreground">Upload photo</p>
+                                      </>
+                                    )}
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) =>
+                                        e.target.files?.[0] && handleColorImageUpload(e.target.files[0], idx)
+                                      }
+                                    />
+                                  </label>
                                 )}
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) =>
-                                    e.target.files?.[0] && handleColorImageUpload(e.target.files[0], idx)
-                                  }
+                                <Input
+                                  className="text-[11px] h-7 px-2"
+                                  placeholder="Or paste URL…"
+                                  value={ci.image_url}
+                                  onChange={(e) => {
+                                    const updated = [...formData.color_images];
+                                    updated[idx] = { ...updated[idx], image_url: e.target.value };
+                                    setFormData({ ...formData, color_images: updated });
+                                  }}
                                 />
-                              </label>
+                              </>
                             )}
-                            {/* URL paste fallback */}
-                            <Input
-                              className="text-[11px] h-7 px-2"
-                              placeholder="Or paste URL…"
-                              value={ci.image_url}
-                              onChange={(e) => {
-                                const updated = [...formData.color_images];
-                                updated[idx] = { ...updated[idx], image_url: e.target.value };
-                                setFormData({ ...formData, color_images: updated });
-                              }}
-                            />
                           </div>
                         );
                       })}
