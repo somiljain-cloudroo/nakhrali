@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import { ProfilePage } from "./pages/ProfilePage";
 import { AuthConfirmPage } from "./pages/AuthConfirmPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { PaymentComplete } from "./pages/PaymentComplete";
 import { useAuth } from "./hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+          <Route path="/payment-complete" element={<PaymentComplete />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

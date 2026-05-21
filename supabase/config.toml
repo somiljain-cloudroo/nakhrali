@@ -49,3 +49,9 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/send-order-approval-email/deno.json"
 entrypoint = "./functions/send-order-approval-email/index.ts"
+
+[functions.create-westpac-checkout]
+verify_jwt = true
+
+[functions.westpac-webhook]
+verify_jwt = false
