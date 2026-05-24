@@ -10,7 +10,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import { ProfilePage } from "./pages/ProfilePage";
 import { AuthConfirmPage } from "./pages/AuthConfirmPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
-import { PaymentComplete } from "./pages/PaymentComplete";
+import PaymentComplete from "./pages/PaymentComplete";
 import { useAuth } from "./hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
