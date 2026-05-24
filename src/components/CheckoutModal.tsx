@@ -118,6 +118,11 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
       return;
     }
 
+    if (!selectedShipping) {
+      toast({ title: "Shipping Required", description: "Please enter your postcode and select a shipping option before placing your order.", variant: "destructive" });
+      return;
+    }
+
     const accountId = selectedContext === "individual" ? undefined : selectedContext;
     const result = await createOrder(cartItems, notes, accountId, {
       shippingPostcode: postcode || undefined,
@@ -352,8 +357,9 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
               </Button>
               <Button
                 type="submit"
-                disabled={loading || cartItems.length === 0}
+                disabled={loading || cartItems.length === 0 || !selectedShipping}
                 className="flex-1 bg-gradient-primary hover:bg-gradient-warm"
+                title={!selectedShipping ? "Calculate shipping first" : undefined}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Place Order
@@ -361,7 +367,9 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
             </div>
 
             <div className="text-center text-sm text-muted-foreground pt-2 border-t">
-              Your order will be confirmed once payment is received.
+              {!selectedShipping
+                ? "Enter your postcode above to calculate shipping before placing your order."
+                : "Your order will be confirmed once payment is received."}
             </div>
           </form>
         )}
@@ -434,7 +442,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
               </div>
 
               <p className="text-[11px] text-muted-foreground">
-                Once we receive your payment we'll confirm the order and arrange dispatch. Questions? Email us at <strong>admin@nakhrali.com.au</strong>
+                Once we receive your payment we'll confirm the order and arrange dispatch. Questions? Contact us at <strong>admin@nakhrali.com.au</strong>
               </p>
             </div>
 
