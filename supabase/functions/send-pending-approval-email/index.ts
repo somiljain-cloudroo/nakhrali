@@ -1,7 +1,7 @@
 import { corsHeaders } from "../_shared/cors.ts";
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
-const ADMIN_EMAIL = "admin@nakhrali.com.au";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_NOTIFICATION_EMAIL") ?? "admin@nakhrali.com.au";
 
 // Notifies admin when a new user signs up. No approval required — users are active immediately.
 Deno.serve(async (req: Request) => {
@@ -29,7 +29,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: ADMIN_EMAIL }] }],
-        from: { email: "somiljain@aol.com", name: "Nakhrali" },
+        from: { email: "noreply@nakhrali.com.au", name: "Nakhrali" },
         subject: `New sign-up: ${name || email}`,
         content: [{
           type: "text/html",

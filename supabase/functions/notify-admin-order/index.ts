@@ -1,7 +1,7 @@
 import { corsHeaders } from "../_shared/cors.ts";
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
-const ADMIN_EMAIL = "admin@nakhrali.com.au";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_NOTIFICATION_EMAIL") ?? "admin@nakhrali.com.au";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -20,7 +20,7 @@ Deno.serve(async (req: Request) => {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${SENDGRID_API_KEY}` },
         body: JSON.stringify({
           personalizations: [{ to: [{ email: ADMIN_EMAIL }] }],
-          from: { email: "somiljain@aol.com", name: "Nakhrali" },
+          from: { email: "noreply@nakhrali.com.au", name: "Nakhrali" },
           subject: `Payment claimed for order ${orderNumber} — check your bank`,
           content: [{
             type: "text/html",
@@ -122,7 +122,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: ADMIN_EMAIL }] }],
-        from: { email: "somiljain@aol.com", name: "Nakhrali" },
+        from: { email: "noreply@nakhrali.com.au", name: "Nakhrali" },
         subject: `New order ${orderNumber} — $${Number(total).toFixed(2)} AUD`,
         content: [{ type: "text/html", value: emailHtml }],
       }),
