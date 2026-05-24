@@ -63,8 +63,8 @@ export function useOrders() {
       // Create order
       const orderData: any = {
         order_number: orderNumberData,
-        ...(accountId 
-          ? { account_id: accountId, ordered_by_contact_id: user.id, customer_id: null } 
+        ...(accountId
+          ? { account_id: accountId, ordered_by_contact_id: user.id, customer_id: null }
           : { customer_id: user.id, account_id: null, ordered_by_contact_id: null }
         ),
         subtotal: Number(subtotal.toFixed(2)),
@@ -74,6 +74,8 @@ export function useOrders() {
         shipping_postcode: shipping?.shippingPostcode || null,
         shipping_method: shipping?.shippingMethod || null,
         shipping_cost: Number((shippingCost).toFixed(2)),
+        payment_status: 'unpaid',
+        payment_method: 'payid',
       };
 
       const { data: order, error: orderError } = await supabase
