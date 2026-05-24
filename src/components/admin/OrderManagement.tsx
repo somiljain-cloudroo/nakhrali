@@ -27,6 +27,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, Check, X, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 
+interface OrderItem {
+  id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  product: { name: string; sku: string | null; unit: string } | null;
+}
+
 interface Order {
   id: string;
   order_number: string;
@@ -36,19 +44,18 @@ interface Order {
   notes: string | null;
   customer_id: string | null;
   account_id: string | null;
-  profiles?: {
-    full_name: string;
-    email: string;
-  } | null;
-  accounts?: {
-    name: string;
-  } | null;
+  shipping_method: string | null;
+  shipping_cost: number | null;
+  profiles?: { full_name: string; email: string } | null;
+  accounts?: { name: string } | null;
 }
 
 export const OrderManagement = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrderItems, setSelectedOrderItems] = useState<OrderItem[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [approvalNotes, setApprovalNotes] = useState("");
   const { user } = useAuth();
@@ -104,6 +111,18 @@ export const OrderManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openOrder = async (order: Order) => {
+    setSelectedOrder(order);
+    setSelectedOrderItems([]);
+    setItemsLoading(true);
+    const { data } = await supabase
+      .from("order_items")
+      .select("id, quantity, unit_price, total_price, product:products(name, sku, unit)")
+      .eq("order_id", order.id);
+    setSelectedOrderItems((data as unknown as OrderItem[]) || []);
+    setItemsLoading(false);
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string, notes?: string) => {
@@ -272,7 +291,7 @@ export const OrderManagement = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setSelectedOrder(order)}
+                            onClick={() => openOrder(order)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -289,23 +308,58 @@ export const OrderManagement = () => {
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className="text-sm font-medium">Customer</label>
-                                  <p className="text-sm text-muted-foreground">
-                                    {getCustomerName(selectedOrder)}
-                                  </p>
+                                  <p className="text-sm text-muted-foreground">{getCustomerName(selectedOrder)}</p>
                                 </div>
                                 <div>
-                                  <label className="text-sm font-medium">Total Amount</label>
-                                  <p className="text-sm text-muted-foreground">
-                                    ${selectedOrder.total_amount.toFixed(2)}
-                                  </p>
+                                  <label className="text-sm font-medium">Total</label>
+                                  <p className="text-sm text-muted-foreground">${selectedOrder.total_amount.toFixed(2)}</p>
                                 </div>
+                                {selectedOrder.shipping_method && (
+                                  <div>
+                                    <label className="text-sm font-medium">Shipping</label>
+                                    <p className="text-sm text-muted-foreground">
+                                      {selectedOrder.shipping_method} — ${(selectedOrder.shipping_cost ?? 0).toFixed(2)}
+                                    </p>
+                                  </div>
+                                )}
                               </div>
+
+                              {/* Order items */}
+                              <div>
+                                <label className="text-sm font-medium">Items Ordered</label>
+                                {itemsLoading ? (
+                                  <p className="text-sm text-muted-foreground mt-1">Loading…</p>
+                                ) : (
+                                  <Table className="mt-2">
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead>Product</TableHead>
+                                        <TableHead className="text-center">Qty</TableHead>
+                                        <TableHead className="text-right">Unit Price</TableHead>
+                                        <TableHead className="text-right">Subtotal</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {selectedOrderItems.map((item) => (
+                                        <TableRow key={item.id}>
+                                          <TableCell>
+                                            <p className="font-medium text-sm">{item.product?.name ?? "—"}</p>
+                                            {item.product?.sku && <p className="text-xs text-muted-foreground">{item.product.sku}</p>}
+                                          </TableCell>
+                                          <TableCell className="text-center">{item.quantity} {item.product?.unit}</TableCell>
+                                          <TableCell className="text-right">${item.unit_price.toFixed(2)}</TableCell>
+                                          <TableCell className="text-right font-semibold">${item.total_price.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                )}
+                              </div>
+
                               {selectedOrder.notes && (
                                 <div>
                                   <label className="text-sm font-medium">Customer Notes</label>
-                                  <p className="text-sm text-muted-foreground bg-muted p-2 rounded">
-                                    {selectedOrder.notes}
-                                  </p>
+                                  <p className="text-sm text-muted-foreground bg-muted p-2 rounded">{selectedOrder.notes}</p>
                                 </div>
                               )}
                               {selectedOrder.status === 'pending' && (

@@ -13,9 +13,17 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { DollarSign, User, Hash, Calendar, Truck } from "lucide-react";
+import { DollarSign, User, Hash, Truck, ChevronDown, ChevronUp } from "lucide-react";
 
 type Order = Tables<"orders">;
+
+interface OrderItem {
+  id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  product: { name: string; sku: string | null; unit: string } | null;
+}
 
 const StatCard = ({ title, value, icon: Icon }: { title: string; value: string; icon: React.ElementType }) => (
   <Card>
@@ -34,6 +42,8 @@ export const ProfilePage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [orderItems, setOrderItems] = useState<Record<string, OrderItem[]>>({});
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -64,6 +74,21 @@ export const ProfilePage = () => {
       fetchOrders();
     }
   }, [profile, authLoading]);
+
+  const toggleOrder = async (orderId: string) => {
+    if (expandedOrder === orderId) {
+      setExpandedOrder(null);
+      return;
+    }
+    setExpandedOrder(orderId);
+    if (!orderItems[orderId]) {
+      const { data } = await supabase
+        .from("order_items")
+        .select("id, quantity, unit_price, total_price, product:products(name, sku, unit)")
+        .eq("order_id", orderId);
+      setOrderItems((prev) => ({ ...prev, [orderId]: (data as unknown as OrderItem[]) || [] }));
+    }
+  };
 
   const balanceDue = orders
     .filter(order => order.status !== 'completed' && order.status !== 'paid')
@@ -174,23 +199,64 @@ export const ProfilePage = () => {
                   <TableHead>Date</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {orders.length > 0 ? (
                   orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.order_number}</TableCell>
-                      <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>{formatCurrency(order.total_amount)}</TableCell>
-                      <TableCell>
-                        <Badge className="capitalize">{order.status}</Badge>
-                      </TableCell>
-                    </TableRow>
+                    <>
+                      <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => toggleOrder(order.id)}>
+                        <TableCell className="font-medium">{order.order_number}</TableCell>
+                        <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>{formatCurrency(order.total_amount)}</TableCell>
+                        <TableCell><Badge className="capitalize">{order.status}</Badge></TableCell>
+                        <TableCell>
+                          {expandedOrder === order.id
+                            ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                            : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                        </TableCell>
+                      </TableRow>
+                      {expandedOrder === order.id && (
+                        <TableRow key={`${order.id}-items`}>
+                          <TableCell colSpan={5} className="bg-muted/30 px-6 pb-4 pt-2">
+                            {!orderItems[order.id] ? (
+                              <p className="text-sm text-muted-foreground">Loading…</p>
+                            ) : orderItems[order.id].length === 0 ? (
+                              <p className="text-sm text-muted-foreground">No items found.</p>
+                            ) : (
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="text-muted-foreground text-xs uppercase tracking-wide">
+                                    <th className="text-left pb-1">Product</th>
+                                    <th className="text-center pb-1">Qty</th>
+                                    <th className="text-right pb-1">Price</th>
+                                    <th className="text-right pb-1">Subtotal</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {orderItems[order.id].map((item) => (
+                                    <tr key={item.id} className="border-t border-border/40">
+                                      <td className="py-1.5">
+                                        <p className="font-medium">{item.product?.name ?? "—"}</p>
+                                        {item.product?.sku && <p className="text-xs text-muted-foreground">{item.product.sku}</p>}
+                                      </td>
+                                      <td className="text-center py-1.5">{item.quantity} {item.product?.unit}</td>
+                                      <td className="text-right py-1.5">{formatCurrency(item.unit_price)}</td>
+                                      <td className="text-right py-1.5 font-semibold">{formatCurrency(item.total_price)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       You have no past orders.
                     </TableCell>
                   </TableRow>
