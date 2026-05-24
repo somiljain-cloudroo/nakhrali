@@ -30,7 +30,7 @@ Deno.serve(async (req: Request) => {
                 <p style="font-size:14px;color:#5c5040;margin:0 0 8px;">The customer says they have transferred payment for:</p>
                 <p style="font-size:20px;font-weight:700;color:#8b6914;margin:0 0 8px;">Order ${orderNumber}</p>
                 <p style="font-size:18px;color:#1a1510;margin:0 0 24px;"><strong>$${Number(total).toFixed(2)} AUD</strong></p>
-                <p style="font-size:13px;color:#9c8a6a;">Please check your bank account (PayID 0469860104) and confirm receipt, then approve the order in the dashboard.</p>
+                <p style="font-size:13px;color:#9c8a6a;">Please check your bank account (PayID ABN 77 440 681 399) and confirm receipt, then approve the order in the dashboard.</p>
                 <a href="https://nakhrali.com.au/admin" style="display:inline-block;margin-top:20px;padding:10px 24px;background:#c9a84c;color:#fff;text-decoration:none;border-radius:2px;font-size:12px;letter-spacing:0.1em;">Go to Admin Dashboard</a>
               </div>`,
           }],
@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
           </tr>
         </tbody>
       </table>
-      <p style="font-size:12px;color:#9c8a6a;">Customer will pay via PayID to 0469860104 using order number as reference.</p>
+      <p style="font-size:12px;color:#9c8a6a;">Customer will pay via PayID (ABN 77 440 681 399) using order number as reference.</p>
       <div class="cta">
         <a href="https://nakhrali.com.au/admin" class="btn">View in Admin Dashboard</a>
       </div>

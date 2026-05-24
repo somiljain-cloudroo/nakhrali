@@ -12,7 +12,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { AccountSelector } from "./AccountSelector";
 import { supabase } from "@/integrations/supabase/client";
 
-const NAKHRALI_PAYID = "0469860104";
+const NAKHRALI_PAYID = "77 440 681 399";
 
 interface CartItem {
   id: string;
@@ -405,7 +405,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
                 {/* PayID */}
                 <div className="flex items-center justify-between rounded-lg border px-4 py-3 bg-card">
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">PayID</p>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">PayID (ABN)</p>
                     <p className="font-mono font-medium text-sm">{NAKHRALI_PAYID}</p>
                   </div>
                   <button
@@ -434,7 +434,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
               </div>
 
               <p className="text-[11px] text-muted-foreground">
-                Once we receive your payment we'll confirm the order and arrange dispatch. Questions? Contact us at <strong>0469 860 104</strong>
+                Once we receive your payment we'll confirm the order and arrange dispatch. Questions? Email us at <strong>admin@nakhrali.com.au</strong>
               </p>
             </div>
 
