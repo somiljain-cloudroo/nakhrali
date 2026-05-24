@@ -9,9 +9,38 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { orderNumber, customerName, customerEmail, total, items, shippingMethod } = await req.json();
+    const { orderNumber, customerName, customerEmail, total, items, shippingMethod, paymentClaimed } = await req.json();
 
     if (!SENDGRID_API_KEY) throw new Error("SENDGRID_API_KEY is not set");
+
+    // Payment-claimed notification — short email, different subject
+    if (paymentClaimed) {
+      const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${SENDGRID_API_KEY}` },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: ADMIN_EMAIL }] }],
+          from: { email: "somiljain@aol.com", name: "Nakhrali" },
+          subject: `Payment claimed for order ${orderNumber} — check your bank`,
+          content: [{
+            type: "text/html",
+            value: `
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:480px;margin:40px auto;background:#fff;border-radius:4px;padding:32px;border:1px solid #e8e0d0;">
+                <h2 style="font-size:16px;color:#1a1510;margin:0 0 16px;">💸 PayID payment claimed</h2>
+                <p style="font-size:14px;color:#5c5040;margin:0 0 8px;">The customer says they have transferred payment for:</p>
+                <p style="font-size:20px;font-weight:700;color:#8b6914;margin:0 0 8px;">Order ${orderNumber}</p>
+                <p style="font-size:18px;color:#1a1510;margin:0 0 24px;"><strong>$${Number(total).toFixed(2)} AUD</strong></p>
+                <p style="font-size:13px;color:#9c8a6a;">Please check your bank account (PayID 0469860104) and confirm receipt, then approve the order in the dashboard.</p>
+                <a href="https://nakhrali.com.au/admin" style="display:inline-block;margin-top:20px;padding:10px 24px;background:#c9a84c;color:#fff;text-decoration:none;border-radius:2px;font-size:12px;letter-spacing:0.1em;">Go to Admin Dashboard</a>
+              </div>`,
+          }],
+        }),
+      });
+      if (!res.ok) throw new Error(`SendGrid error ${res.status}: ${await res.text()}`);
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const itemsHtml = Array.isArray(items)
       ? items.map((i: { name: string; quantity: number; price: number }) =>

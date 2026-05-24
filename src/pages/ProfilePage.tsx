@@ -47,7 +47,7 @@ export const ProfilePage = () => {
         const { data, error } = await supabase
           .from("orders")
           .select("*")
-          .eq("ordered_by_contact_id", profile.id)
+          .or(`customer_id.eq.${profile.id},ordered_by_contact_id.eq.${profile.id}`)
           .order("created_at", { ascending: false });
 
         if (error) throw new Error(error.message);

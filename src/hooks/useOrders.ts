@@ -101,17 +101,19 @@ export function useOrders() {
 
       if (itemsError) throw itemsError;
 
-      // Notify admin of new order (fire-and-forget)
+      // Notify admin of new order (non-blocking)
       supabase.functions.invoke("notify-admin-order", {
         body: {
           orderNumber: orderNumberData,
-          customerName: null, // profile not available in hook; admin email shows email
+          customerName: null,
           customerEmail: user.email,
           total: totalAmount,
           items: cartItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
           shippingMethod: shipping?.shippingMethod,
         },
-      }).catch(() => { /* non-critical */ });
+      }).then(({ error: fnErr }) => {
+        if (fnErr) console.error("notify-admin-order failed:", fnErr);
+      }).catch((e) => console.error("notify-admin-order error:", e));
 
       // Create initial status history
       const { error: historyError } = await supabase

@@ -141,6 +141,26 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
     setStep(2);
   };
 
+  const handleDone = async () => {
+    if (placedOrder) {
+      // Notify admin that customer has claimed payment
+      supabase.functions.invoke("notify-admin-order", {
+        body: {
+          orderNumber: placedOrder.orderNumber,
+          customerName: null,
+          customerEmail: null,
+          total: placedOrder.total,
+          items: [],
+          shippingMethod: null,
+          paymentClaimed: true,
+        },
+      }).then(({ error: fnErr }) => {
+        if (fnErr) console.error("payment-claimed notification failed:", fnErr);
+      }).catch((e) => console.error("payment-claimed notification error:", e));
+    }
+    handleClose();
+  };
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({ title: `${label} copied`, description: text });
@@ -418,7 +438,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
               </p>
             </div>
 
-            <Button onClick={handleClose} className="w-full">
+            <Button onClick={handleDone} className="w-full">
               Done — I've made the transfer
             </Button>
           </div>
