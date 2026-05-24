@@ -99,6 +99,18 @@ export function useOrders() {
 
       if (itemsError) throw itemsError;
 
+      // Notify admin of new order (fire-and-forget)
+      supabase.functions.invoke("notify-admin-order", {
+        body: {
+          orderNumber: orderNumberData,
+          customerName: null, // profile not available in hook; admin email shows email
+          customerEmail: user.email,
+          total: totalAmount,
+          items: cartItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+          shippingMethod: shipping?.shippingMethod,
+        },
+      }).catch(() => { /* non-critical */ });
+
       // Create initial status history
       const { error: historyError } = await supabase
         .from('order_status_history')

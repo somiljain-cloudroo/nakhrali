@@ -23,6 +23,7 @@ import {
 interface ColorImage {
   color: string;
   image_url: string;
+  image_urls?: string[];
 }
 
 // CSS swatch values — mirrors ProductManagement JEWELLERY_COLORS
@@ -42,6 +43,7 @@ const COLOR_SWATCHES: Record<string, string> = {
   "Brown":  "#795548",
   "Orange": "#E65100",
   "Silver": "#A8A9AD",
+  "Black":  "#1A1A1A",
 };
 
 type Product = Database["public"]["Tables"]["products"]["Row"] & {
@@ -67,19 +69,24 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
     ? (product.color_images as ColorImage[]).filter((ci) => ci.image_url)
     : [];
 
-  const productImages: ProductImagesProps[] = rawColorImages.length > 0
-    ? rawColorImages.map((ci) => ({
-        id: `${product.id}-${ci.color}`,
+  // Expand entries with multiple images (Multi colour) into individual display slots
+  const expandedColorImages = rawColorImages.flatMap((ci) => {
+    const urls = ci.image_urls && ci.image_urls.length > 1 ? ci.image_urls : [ci.image_url];
+    return urls.filter(Boolean).map((url, i) => ({ color: ci.color, image_url: url, index: i }));
+  });
+
+  const productImages: ProductImagesProps[] = expandedColorImages.length > 0
+    ? expandedColorImages.map((ci, i) => ({
+        id: `${product.id}-${ci.color}-${i}`,
         color: ci.color,
-        // pass same URL twice so hover effect is a subtle re-render; swap for real hover shot when available
         images: [ci.image_url, ci.image_url],
       }))
     : product.image_url
       ? [{ id: product.id, color: "default", images: [product.image_url, product.image_url] }]
       : [];
 
-  const cssSwatches = rawColorImages.map((ci) => COLOR_SWATCHES[ci.color] ?? "#ccc");
-  const colorLabels  = rawColorImages.map((ci) => ci.color);
+  const cssSwatches = expandedColorImages.map((ci) => COLOR_SWATCHES[ci.color] ?? "#ccc");
+  const colorLabels  = expandedColorImages.map((ci) => ci.color);
 
   // 21st.dev useSetActiveProduct hook drives colour + hover state
   const { activeColor, activeImage, handleColorChange, handleMouse } = useSetActiveProduct();

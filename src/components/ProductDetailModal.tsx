@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 type Product = Database["public"]["Tables"]["products"]["Row"] & {
   category?: Database["public"]["Tables"]["categories"]["Row"];
-  color_images?: { color: string; image_url: string }[];
+  color_images?: { color: string; image_url: string; image_urls?: string[] }[];
 };
 
 const COLOR_SWATCHES: Record<string, string> = {
@@ -34,6 +34,7 @@ const COLOR_SWATCHES: Record<string, string> = {
   "Brown":  "#795548",
   "Orange": "#E65100",
   "Silver": "#A8A9AD",
+  "Black":  "#1A1A1A",
 };
 
 // Spring config for colour ring
@@ -55,10 +56,13 @@ export function ProductDetailModal({
   const { isAuthenticated } = useAuth();
   const { activeColor, handleColorChange } = useSetActiveProduct();
 
+  // Expand entries with multiple images (e.g. Multi colour) into individual display slots
   const colorImages = Array.isArray(product?.color_images)
-    ? (product!.color_images as { color: string; image_url: string }[]).filter(
-        (ci) => ci.image_url
-      )
+    ? (product!.color_images as { color: string; image_url: string; image_urls?: string[] }[])
+        .flatMap((ci) => {
+          const urls = ci.image_urls && ci.image_urls.length > 1 ? ci.image_urls : [ci.image_url];
+          return urls.filter(Boolean).map((url) => ({ color: ci.color, image_url: url }));
+        })
     : [];
 
   const displayImage =

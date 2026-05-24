@@ -44,6 +44,9 @@ verify_jwt = false
 [functions.send-account-approved-email]
 verify_jwt = false
 
+[functions.notify-admin-order]
+verify_jwt = false
+
 [functions.send-order-approval-email]
 enabled = true
 verify_jwt = true

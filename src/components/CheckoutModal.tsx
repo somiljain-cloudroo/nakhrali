@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Package, Truck, ShieldCheck } from "lucide-react";
+import { Loader2, Package, Truck, CheckCircle2, Copy, Banknote } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useOrders } from "@/hooks/useOrders";
-import { useAuth } from "@/hooks/useAuth";
 import { AccountSelector } from "./AccountSelector";
 import { supabase } from "@/integrations/supabase/client";
+
+const NAKHRALI_PAYID = "0469860104";
 
 interface CartItem {
   id: string;
@@ -27,6 +28,11 @@ interface ShippingService {
   code: string;
   name: string;
   price: number;
+}
+
+interface PlacedOrder {
+  orderNumber: string;
+  total: number;
 }
 
 interface CheckoutModalProps {
@@ -47,13 +53,11 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
   const [shippingLoading, setShippingLoading] = useState(false);
   const [shippingError, setShippingError] = useState("");
 
-  // ── Step 2 payment state ─────────────────────────────────────────────────
+  // ── Step 2 PayID state ───────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2>(1);
-  const [checkoutUrl, setCheckoutUrl] = useState("");
-  const [westpacLoading, setWestpacLoading] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
 
   const { createOrder, loading } = useOrders();
-  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -63,8 +67,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
   // ── Reset all state when dialog closes ───────────────────────────────────
   const handleClose = () => {
     setStep(1);
-    setCheckoutUrl("");
-    setWestpacLoading(false);
+    setPlacedOrder(null);
     setNotes("");
     setSelectedContext("individual");
     setPostcode("");
@@ -131,48 +134,16 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
       return;
     }
 
-    // Order created — now initiate Westpac checkout
-    const { order } = result;
-    setWestpacLoading(true);
+    // Order created — show PayID payment instructions
+    setPlacedOrder({ orderNumber: result.order.order_number, total });
+    onSuccess(); // clear cart
+    setStep(2);
+  };
 
-    try {
-      const { data: wpData, error: wpError } = await supabase.functions.invoke(
-        "create-westpac-checkout",
-        {
-          body: {
-            orderId: order.id,
-            amount: total,
-            orderNumber: order.order_number,
-            customerEmail: user?.email ?? "",
-            customerName: profile?.full_name ?? "",
-          },
-        }
-      );
-
-      if (wpError) throw new Error(wpError.message);
-      if (wpData?.error) throw new Error(wpData.error);
-
-      const url: string = wpData?.checkoutUrl ?? "";
-      if (!url) throw new Error("No checkout URL returned from payment provider");
-
-      setCheckoutUrl(url);
-      setStep(2);
-      onSuccess(); // clear cart / signal parent that order exists
-    } catch (err) {
-      console.error("Westpac checkout error:", err);
-      // Order already saved — inform the customer and close gracefully
-      toast({
-        title: "Payment Setup Failed",
-        description:
-          "Your order was saved but we could not open the payment page. " +
-          "Please contact us to complete payment.",
-        variant: "destructive",
-      });
-      onSuccess();
-      handleClose();
-    } finally {
-      setWestpacLoading(false);
-    }
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({ title: `${label} copied`, description: text });
+    });
   };
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -188,8 +159,8 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
               </>
             ) : (
               <>
-                <CreditCard className="h-5 w-5" />
-                Pay by Card (Westpac)
+                <Banknote className="h-5 w-5 text-primary" />
+                Complete Payment via PayID
               </>
             )}
           </DialogTitle>
@@ -355,57 +326,100 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
 
             {/* Actions */}
             <div className="flex gap-3 pt-4 border-t mt-4">
-              <Button type="button" variant="outline" onClick={handleClose} className="flex-1" disabled={loading || westpacLoading}>
+              <Button type="button" variant="outline" onClick={handleClose} className="flex-1" disabled={loading}>
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={loading || westpacLoading || cartItems.length === 0}
+                disabled={loading || cartItems.length === 0}
                 className="flex-1 bg-gradient-primary hover:bg-gradient-warm"
               >
-                {(loading || westpacLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <CreditCard className="mr-2 h-4 w-4" />
-                Place Order &amp; Pay
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Place Order
               </Button>
             </div>
 
             <div className="text-center text-sm text-muted-foreground pt-2 border-t">
-              Your order will be reviewed by our team after payment is confirmed.
+              Your order will be confirmed once payment is received.
             </div>
           </form>
         )}
 
-        {/* ── STEP 2: Westpac payment iframe ────────────────────────── */}
-        {step === 2 && (
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
-              <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-              <span>Secure payment powered by Westpac</span>
-            </div>
+        {/* ── STEP 2: PayID payment instructions ────────────────────── */}
+        {step === 2 && placedOrder && (
+          <div className="flex flex-col gap-5 overflow-y-auto">
 
-            {westpacLoading ? (
-              <div className="flex flex-col items-center justify-center flex-1 gap-4 py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Opening secure payment page…</p>
+            {/* Success banner */}
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+              <div>
+                <p className="font-semibold text-emerald-700 dark:text-emerald-400">Order placed!</p>
+                <p className="text-xs text-muted-foreground">
+                  Order <span className="font-mono font-semibold">{placedOrder.orderNumber}</span> is saved. Complete payment below to confirm it.
+                </p>
               </div>
-            ) : checkoutUrl ? (
-              <iframe
-                src={checkoutUrl}
-                title="Westpac Secure Payment"
-                style={{ width: "100%", height: "500px", border: "none", borderRadius: "8px" }}
-                allow="payment"
-              />
-            ) : (
-              <p className="text-sm text-destructive text-center py-8">
-                Payment page could not be loaded. Please close and try again.
-              </p>
-            )}
-
-            <div className="pt-3 border-t mt-3 text-center">
-              <Button variant="ghost" size="sm" onClick={handleClose} className="text-muted-foreground">
-                Cancel &amp; return to store
-              </Button>
             </div>
+
+            {/* PayID instructions card */}
+            <div className="rounded-xl border border-border bg-card/60 p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold text-sm">Pay via PayID (Bank Transfer)</h3>
+              </div>
+
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Open your banking app, choose <strong>Pay to PayID</strong>, and enter the details below. Use the exact reference so we can match your payment.
+              </p>
+
+              <div className="space-y-3">
+                {/* Amount */}
+                <div className="flex items-center justify-between rounded-lg bg-primary/5 border border-primary/15 px-4 py-3">
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Amount</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-primary">${placedOrder.total.toFixed(2)}</span>
+                    <span className="text-xs text-muted-foreground">AUD</span>
+                  </div>
+                </div>
+
+                {/* PayID */}
+                <div className="flex items-center justify-between rounded-lg border px-4 py-3 bg-card">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">PayID</p>
+                    <p className="font-mono font-medium text-sm">{NAKHRALI_PAYID}</p>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(NAKHRALI_PAYID, "PayID")}
+                    className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors cursor-pointer"
+                    title="Copy PayID"
+                  >
+                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </div>
+
+                {/* Reference */}
+                <div className="flex items-center justify-between rounded-lg border px-4 py-3 bg-card">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Reference (required)</p>
+                    <p className="font-mono font-semibold text-sm">{placedOrder.orderNumber}</p>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(placedOrder.orderNumber, "Reference")}
+                    className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors cursor-pointer"
+                    title="Copy reference"
+                  >
+                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-muted-foreground">
+                Once we receive your payment we'll confirm the order and arrange dispatch. Questions? Contact us at <strong>0469 860 104</strong>
+              </p>
+            </div>
+
+            <Button onClick={handleClose} className="w-full">
+              Done — I've made the transfer
+            </Button>
           </div>
         )}
       </DialogContent>

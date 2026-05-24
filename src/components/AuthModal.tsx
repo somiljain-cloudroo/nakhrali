@@ -122,12 +122,13 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       }
 
       if (data.user) {
+        // Notify admin of new sign-up (fire-and-forget)
         supabase.functions.invoke('send-pending-approval-email', {
           body: { email: signUpData.email, name: signUpData.fullName },
         });
         toast({
-          title: "Account Created!",
-          description: "Please check your email to verify your account.",
+          title: "Welcome to Nakhrali!",
+          description: "Please check your email to verify your account, then sign in to start shopping.",
         });
         onSuccess();
         onClose();

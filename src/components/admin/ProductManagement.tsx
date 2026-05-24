@@ -59,6 +59,7 @@ const JEWELLERY_COLORS: ColorOption[] = [
   { value: "Brown",      swatch: "#7B4F2E" },
   { value: "Orange",     swatch: "#E07B39" },
   { value: "Silver",     swatch: "#A8A9AD" },
+  { value: "Black",      swatch: "#1A1A1A" },
 ];
 
 interface ColorImage {

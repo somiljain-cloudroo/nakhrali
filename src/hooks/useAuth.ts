@@ -81,7 +81,7 @@ export function useAuth() {
               full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
               role: 'customer',
               contact_type: 'primary',
-              is_active: false,
+              is_active: true,
             });
           
           if (!insertError) {

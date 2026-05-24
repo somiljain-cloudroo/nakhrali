@@ -1,68 +1,9 @@
 import { corsHeaders } from "../_shared/cors.ts";
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
+const ADMIN_EMAIL = "admin@nakhrali.com.au";
 
-const emailHtml = (name: string) => `
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { margin: 0; padding: 0; background: #f7f4ef; font-family: Georgia, 'Times New Roman', serif; }
-    .wrapper { max-width: 560px; margin: 40px auto; background: #ffffff; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.07); }
-    .header { background: #ffffff; padding: 36px 40px 24px; text-align: center; border-bottom: 1px solid #e8e0d0; }
-    .logo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
-    .brand { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #a08444; margin-top: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .body { padding: 36px 40px; }
-    .greeting { font-size: 22px; color: #1a1510; font-weight: normal; margin: 0 0 16px; }
-    .copy { font-size: 14px; line-height: 1.8; color: #5c5040; margin: 0 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .highlight { background: #fdf9f0; border-left: 3px solid #c9a84c; padding: 16px 20px; border-radius: 0 4px 4px 0; margin: 24px 0; }
-    .highlight p { font-size: 13px; color: #7a5c1e; margin: 0; line-height: 1.7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .divider { border: none; border-top: 1px solid #e8e0d0; margin: 28px 0; }
-    .small { font-size: 11px; color: #9c8a6a; line-height: 1.7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .footer { background: #f7f4ef; padding: 20px 40px; text-align: center; }
-    .footer-text { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #b8a07a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; }
-    .tagline { font-size: 10px; color: #c9a84c; letter-spacing: 0.2em; text-transform: uppercase; margin: 6px 0 0; font-family: Georgia, serif; }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="header">
-      <img src="https://nakhrali.com.au/nakhrali-logo.jpg" alt="Nakhrali" class="logo" />
-      <p class="brand">Nakhrali</p>
-    </div>
-    <div class="body">
-      <h1 class="greeting">Thank you, ${name || "there"}</h1>
-      <p class="copy">
-        We have received your registration request for <strong>nakhrali.com.au</strong>.
-        Our team reviews every new account personally to ensure the best experience for our community.
-      </p>
-      <div class="highlight">
-        <p>
-          ✦ &nbsp;Your account is currently <strong>pending approval</strong>.<br/>
-          We aim to review and authorise new accounts within 1–2 business days.<br/>
-          You will receive a confirmation email as soon as your account is active.
-        </p>
-      </div>
-      <p class="copy">
-        In the meantime, feel free to browse our collection at
-        <a href="https://nakhrali.com.au" style="color: #a08444;">nakhrali.com.au</a>.
-        If you have any questions, simply reply to this email.
-      </p>
-      <hr class="divider" />
-      <p class="small">
-        If you did not sign up for a Nakhrali account, please ignore this email.
-      </p>
-    </div>
-    <div class="footer">
-      <p class="footer-text">nakhrali.com.au &nbsp;·&nbsp; Melbourne, Australia</p>
-      <p class="tagline">Bold · Elegant · You</p>
-    </div>
-  </div>
-</body>
-</html>
-`;
-
+// Notifies admin when a new user signs up. No approval required — users are active immediately.
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -78,9 +19,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (!SENDGRID_API_KEY) {
-      throw new Error("SENDGRID_API_KEY is not set");
-    }
+    if (!SENDGRID_API_KEY) throw new Error("SENDGRID_API_KEY is not set");
 
     const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
@@ -89,10 +28,21 @@ Deno.serve(async (req: Request) => {
         Authorization: `Bearer ${SENDGRID_API_KEY}`,
       },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email }] }],
+        personalizations: [{ to: [{ email: ADMIN_EMAIL }] }],
         from: { email: "somiljain@aol.com", name: "Nakhrali" },
-        subject: "Your Nakhrali account is pending approval",
-        content: [{ type: "text/html", value: emailHtml(name) }],
+        subject: `New sign-up: ${name || email}`,
+        content: [{
+          type: "text/html",
+          value: `
+            <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:480px;margin:40px auto;background:#fff;border-radius:4px;padding:32px;border:1px solid #e8e0d0;">
+              <h2 style="font-size:16px;color:#1a1510;margin:0 0 16px;">New user registered on Nakhrali</h2>
+              <p style="font-size:14px;color:#5c5040;margin:0 0 8px;"><strong>Name:</strong> ${name || "(not provided)"}</p>
+              <p style="font-size:14px;color:#5c5040;margin:0 0 24px;"><strong>Email:</strong> ${email}</p>
+              <p style="font-size:12px;color:#9c8a6a;">Their account is active immediately — no approval needed.</p>
+              <a href="https://nakhrali.com.au/admin" style="display:inline-block;margin-top:20px;padding:10px 24px;background:#c9a84c;color:#fff;text-decoration:none;border-radius:2px;font-size:12px;letter-spacing:0.1em;">View Admin Dashboard</a>
+            </div>
+          `,
+        }],
       }),
     });
 
