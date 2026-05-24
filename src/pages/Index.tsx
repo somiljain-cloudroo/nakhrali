@@ -33,7 +33,7 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const { toast } = useToast();
