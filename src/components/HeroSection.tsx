@@ -106,7 +106,7 @@ export function HeroSection({ isAuthenticated, onBrowse, onSignIn, productCount,
               className="text-base leading-relaxed max-w-md"
               style={{ color: 'hsl(var(--muted-foreground))' }}
             >
-              Twenty-six handcrafted pieces — each named for a Sanskrit word,
+              Handpicked statement pieces — each named for a Sanskrit word,
               each set with heritage stones, polki diamonds and gold-plated settings.
               Bridal, festive, contemporary.
             </motion.p>
