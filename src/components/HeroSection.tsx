@@ -106,9 +106,9 @@ export function HeroSection({ isAuthenticated, onBrowse, onSignIn, productCount,
               className="text-base leading-relaxed max-w-md"
               style={{ color: 'hsl(var(--muted-foreground))' }}
             >
-              Handpicked statement pieces — each named for a Sanskrit word,
-              each set with heritage stones, polki diamonds and gold-plated settings.
-              Bridal, festive, contemporary.
+              Handpicked statement pieces — designed to be noticed, made to be remembered.
+              From bridal showpieces to festive and contemporary designs, every piece is chosen
+              to elevate the moment and the woman wearing it. Bold, Elegant, You.
             </motion.p>
 
             {/* CTAs */}
