@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gem, Loader2, Minus, Plus, ShoppingCart, Lock, AlertCircle, ChevronLeft } from "lucide-react";
+import { Gem, Loader2, Minus, Plus, ShoppingCart, Lock, ChevronLeft } from "lucide-react";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -100,7 +100,6 @@ export default function ProductPage() {
 
   const minQty = product.min_order_quantity || 1;
   const isInStock = (product.stock_quantity ?? 0) > 0;
-  const stockLow = isInStock && (product.stock_quantity ?? 0) <= 5;
 
   const handleAdd = () => {
     if (!isAuthenticated) {
@@ -211,12 +210,6 @@ export default function ProductPage() {
               <p className="text-sm text-[#52525B] leading-relaxed mb-6">{product.description}</p>
             )}
 
-            {stockLow && isInStock && (
-              <div className="flex items-center gap-2 text-amber-600 text-xs font-medium mb-4">
-                <AlertCircle className="h-3.5 w-3.5" />
-                Only {product.stock_quantity} left
-              </div>
-            )}
 
             <div className="mt-auto pt-6 border-t border-[#E4E4E7] space-y-4">
               {isAuthenticated ? (

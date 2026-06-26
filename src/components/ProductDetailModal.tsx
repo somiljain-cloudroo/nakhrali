@@ -6,7 +6,7 @@
 import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, ShoppingCart, Minus, Plus, Lock, Gem, AlertCircle } from "lucide-react";
+import { X, ShoppingCart, Minus, Plus, Lock, Gem } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSetActiveProduct } from "@/components/ui/product-card";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,7 +72,6 @@ export function ProductDetailModal({
   const [quantity, setQuantity] = useState(minQty);
 
   const isInStock = (product?.stock_quantity ?? 0) > 0;
-  const stockLow = isInStock && (product?.stock_quantity ?? 0) <= 5;
 
   const handleAdd = () => {
     if (product) {
@@ -263,13 +262,6 @@ export function ProductDetailModal({
                   </p>
                 )}
 
-                {/* Stock warning */}
-                {stockLow && isInStock && (
-                  <div className="flex items-center gap-2 text-amber-600 text-xs font-medium">
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    Only {product.stock_quantity} left
-                  </div>
-                )}
 
               </div>
 

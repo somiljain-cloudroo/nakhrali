@@ -4,7 +4,7 @@
  * framer-motion useMotionValue/useSpring/useTransform 3D tilt + mouse glow
  * Uses design system CSS vars — no inline gold overrides
  */
-import { Plus, Minus, ShoppingCart, Lock, Gem, AlertCircle } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Lock, Gem } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -116,7 +116,6 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
   const handleAddToCart = () => { onAddToCart(product, quantity); setQuantity(minQty); };
 
   const isInStock = product.stock_quantity > 0;
-  const stockLow = product.stock_quantity > 0 && product.stock_quantity <= 5;
 
   return (
     <motion.div
@@ -184,15 +183,6 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
           </div>
         )}
 
-        {/* Low stock badge */}
-        {stockLow && isInStock && (
-          <div className="absolute bottom-2.5 right-2.5 z-10">
-            <div className="flex items-center gap-1 bg-amber-500/90 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm">
-              <AlertCircle className="h-2.5 w-2.5" />
-              Only {product.stock_quantity} left
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Colour swatches (21st.dev ProductColorsThumbs) ── */}
@@ -235,9 +225,6 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
             )}
             {minQty > 1 && <p className="text-[10px] text-muted-foreground mt-0.5">Min. order: {minQty}</p>}
           </div>
-          {!stockLow && isInStock && (
-            <p className="text-[11px] text-muted-foreground">{product.stock_quantity} in stock</p>
-          )}
         </div>
 
         {/* CTA */}
