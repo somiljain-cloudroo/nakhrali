@@ -3,7 +3,7 @@ project_id = "swfyybcczjkwjbddzfgd"
 [auth]
 site_url = "https://nakhrali.com.au"
 additional_redirect_urls = ["https://nakhrali.com.au", "https://nakhrali.com.au/**"]
-jwt_expiry = 3600
+jwt_expiry = 1800
 enable_signup = true
 
 [auth.email]
