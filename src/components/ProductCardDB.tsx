@@ -212,17 +212,10 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
         {/* Price */}
         <div className="flex items-end justify-between">
           <div>
-            {isAuthenticated ? (
-              <>
-                <p className="text-xl font-extrabold text-primary leading-none">${product.price.toFixed(2)}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">per {product.unit}</p>
-              </>
-            ) : (
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Lock className="h-3 w-3" />
-                <p className="text-xs font-medium">Sign in for pricing</p>
-              </div>
-            )}
+            <>
+              <p className="text-xl font-extrabold text-primary leading-none">${product.price.toFixed(2)}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">per {product.unit}</p>
+            </>
             {minQty > 1 && <p className="text-[10px] text-muted-foreground mt-0.5">Min. order: {minQty}</p>}
           </div>
         </div>

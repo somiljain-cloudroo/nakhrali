@@ -268,23 +268,23 @@ export function ProductDetailModal({
               {/* ── Sticky CTA footer ── */}
               <div className="border-t border-[#E4E4E7] px-6 md:px-8 py-5 bg-[#FAFAFA] space-y-4">
 
-                {isAuthenticated ? (
-                  <>
-                    {/* Price */}
-                    <div className="flex items-baseline gap-2">
-                      <span
-                        className="text-3xl font-bold leading-none"
-                        style={{ color: "hsl(var(--primary))" }}
-                      >
-                        ${product.price.toFixed(2)}
-                      </span>
-                      <span className="text-sm text-[#71717A]">per {product.unit}</span>
-                    </div>
-                    {minQty > 1 && (
-                      <p className="text-xs text-[#A1A1AA]">Min. order: {minQty}</p>
-                    )}
+                <>
+                  {/* Price */}
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      className="text-3xl font-bold leading-none"
+                      style={{ color: "hsl(var(--primary))" }}
+                    >
+                      ${product.price.toFixed(2)}
+                    </span>
+                    <span className="text-sm text-[#71717A]">per {product.unit}</span>
+                  </div>
+                  {minQty > 1 && (
+                    <p className="text-xs text-[#A1A1AA]">Min. order: {minQty}</p>
+                  )}
 
-                    {isInStock ? (
+                  {isAuthenticated ? (
+                    isInStock ? (
                       <div className="flex items-center gap-3">
                         {/* Qty */}
                         <div className="flex items-center rounded-xl border border-[#E4E4E7] bg-white">
@@ -328,14 +328,8 @@ export function ProductDetailModal({
                       >
                         Sold Out
                       </button>
-                    )}
-                  </>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-[#71717A]">
-                      <Lock className="h-3.5 w-3.5" />
-                      <span className="text-sm">Sign in to see pricing & order</span>
-                    </div>
+                    )
+                  ) : (
                     <button
                       disabled
                       className="w-full h-10 rounded-xl text-sm font-medium text-[#A1A1AA]
@@ -345,8 +339,8 @@ export function ProductDetailModal({
                       <Lock className="h-3.5 w-3.5" />
                       Login to Order
                     </button>
-                  </div>
-                )}
+                  )}
+                </>
               </div>
             </div>
           </>

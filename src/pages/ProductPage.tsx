@@ -212,68 +212,60 @@ export default function ProductPage() {
 
 
             <div className="mt-auto pt-6 border-t border-[#E4E4E7] space-y-4">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold leading-none text-primary">
+                  {formatAUD(Number(product.price))}
+                </span>
+                <span className="text-sm text-[#71717A]">per {product.unit}</span>
+              </div>
+              {minQty > 1 && <p className="text-xs text-[#A1A1AA]">Min. order: {minQty}</p>}
+
               {isAuthenticated ? (
-                <>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold leading-none text-primary">
-                      {formatAUD(Number(product.price))}
-                    </span>
-                    <span className="text-sm text-[#71717A]">per {product.unit}</span>
-                  </div>
-                  {minQty > 1 && <p className="text-xs text-[#A1A1AA]">Min. order: {minQty}</p>}
-
-                  {isInStock ? (
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center rounded-xl border border-[#E4E4E7] bg-white">
-                        <button
-                          onClick={() => setQuantity((q) => Math.max(minQty, q - 1))}
-                          disabled={quantity <= minQty}
-                          className="h-10 w-10 flex items-center justify-center hover:bg-[#F4F4F5] rounded-l-xl disabled:opacity-40"
-                        >
-                          <Minus className="h-3.5 w-3.5 text-[#18181B]" />
-                        </button>
-                        <span className="w-10 text-center text-sm font-semibold tabular-nums text-[#09090B]">
-                          {quantity}
-                        </span>
-                        <button
-                          onClick={() => setQuantity((q) => q + 1)}
-                          className="h-10 w-10 flex items-center justify-center hover:bg-[#F4F4F5] rounded-r-xl"
-                        >
-                          <Plus className="h-3.5 w-3.5 text-[#18181B]" />
-                        </button>
-                      </div>
-
+                isInStock ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center rounded-xl border border-[#E4E4E7] bg-white">
                       <button
-                        onClick={handleAdd}
-                        className="flex-1 h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 text-primary-foreground bg-primary hover:bg-primary/90"
+                        onClick={() => setQuantity((q) => Math.max(minQty, q - 1))}
+                        disabled={quantity <= minQty}
+                        className="h-10 w-10 flex items-center justify-center hover:bg-[#F4F4F5] rounded-l-xl disabled:opacity-40"
                       >
-                        <ShoppingCart className="h-4 w-4" />
-                        Add to Bag
+                        <Minus className="h-3.5 w-3.5 text-[#18181B]" />
+                      </button>
+                      <span className="w-10 text-center text-sm font-semibold tabular-nums text-[#09090B]">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => setQuantity((q) => q + 1)}
+                        className="h-10 w-10 flex items-center justify-center hover:bg-[#F4F4F5] rounded-r-xl"
+                      >
+                        <Plus className="h-3.5 w-3.5 text-[#18181B]" />
                       </button>
                     </div>
-                  ) : (
+
                     <button
-                      disabled
-                      className="w-full h-10 rounded-xl text-sm font-medium text-[#A1A1AA] border border-[#E4E4E7] bg-white cursor-not-allowed"
+                      onClick={handleAdd}
+                      className="flex-1 h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 text-primary-foreground bg-primary hover:bg-primary/90"
                     >
-                      Sold Out
+                      <ShoppingCart className="h-4 w-4" />
+                      Add to Bag
                     </button>
-                  )}
-                </>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-[#71717A]">
-                    <Lock className="h-3.5 w-3.5" />
-                    <span className="text-sm">Sign in to see pricing & order</span>
                   </div>
-                  <Link
-                    to="/"
-                    className="w-full h-10 rounded-xl text-sm font-medium border border-dashed border-[#E4E4E7] bg-white flex items-center justify-center gap-2 text-[#71717A]"
+                ) : (
+                  <button
+                    disabled
+                    className="w-full h-10 rounded-xl text-sm font-medium text-[#A1A1AA] border border-[#E4E4E7] bg-white cursor-not-allowed"
                   >
-                    <Lock className="h-3.5 w-3.5" />
-                    Sign In to Order
-                  </Link>
-                </div>
+                    Sold Out
+                  </button>
+                )
+              ) : (
+                <button
+                  disabled
+                  className="w-full h-10 rounded-xl text-sm font-medium text-[#A1A1AA] border border-dashed border-[#E4E4E7] bg-white cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                  Login to Order
+                </button>
               )}
             </div>
           </div>
