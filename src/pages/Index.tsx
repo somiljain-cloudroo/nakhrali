@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
-import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { ProductCardDB } from "@/components/ProductCardDB";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { CategoryFilter } from "@/components/CategoryFilter";
@@ -268,9 +267,6 @@ const Index = () => {
         onClose={() => setDetailProduct(null)}
         onAddToCart={handleAddToCart}
       />
-
-      {/* ── Testimonials ── */}
-      <TestimonialsSection />
 
       {/* ── Footer ── */}
       <footer className="border-t py-8 mt-4" style={{ borderColor: "rgba(184,150,12,0.25)", background: "#0f0d09" }}>
