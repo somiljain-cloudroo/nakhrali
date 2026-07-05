@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        cormorant: ['"Cormorant Garamond"', 'Georgia', 'serif'],
         sans: ['Jost', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
