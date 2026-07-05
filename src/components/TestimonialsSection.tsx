@@ -84,7 +84,7 @@ export function TestimonialsSection() {
             className="font-cormorant text-4xl md:text-5xl font-semibold mb-3"
             style={{ color: "#b8960c" }}
           >
-            What Our Patrons Say
+            What Our Lovely Customers Say
           </h2>
           <p className="text-sm max-w-md mx-auto" style={{ color: "rgba(250,248,242,0.45)" }}>
             Worn at weddings, celebrations, and quiet moments that last a lifetime.
