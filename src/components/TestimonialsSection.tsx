@@ -15,39 +15,47 @@ const testimonials: Testimonial[] = [
     name: "Priya Sharma",
     initials: "PS",
     quote:
-      "The craftsmanship of the Titli bracelet is absolutely breathtaking. Every detail reflects the rich heritage of Indian jewellery artistry.",
+      "I loved the jewellery ordered from Nakhrali. Every detail reflects the rich heritage of Indian jewellery artistry. Would definitely recommend to my known ones.",
     rating: 5,
   },
   {
     id: 2,
-    name: "Aisha Patel",
-    initials: "AP",
+    name: "Dhriti Dutta",
+    initials: "DD",
     quote:
-      "I wore the Nakhrali earrings to my sister's wedding and received countless compliments. The gold work is exquisite and timeless.",
+      "Loved the beautiful collection from Nakhrali. The jewellery is stylish, elegant and perfect for special occasions. Very happy with my purchase and have been recommending it to my friends.",
     rating: 5,
   },
   {
     id: 3,
-    name: "Meera Kapoor",
-    initials: "MK",
+    name: "Priyanka Dua",
+    initials: "PD",
     quote:
-      "Nakhrali's bridal collection exceeded all expectations. The set I chose became a family heirloom the moment I wore it.",
+      "I visited Nakhrali today, the jewellery designs are elegant and at the same time it gives you a classy look. All the pieces are beautiful and at an affordable price. My experience was amazing and would be visiting soon to buy some more.",
     rating: 5,
   },
   {
     id: 4,
-    name: "Radhika Mehta",
-    initials: "RM",
+    name: "Kirthi",
+    initials: "K",
     quote:
-      "The attention to detail in my pieces is remarkable. It's not just jewellery — it's wearable art that tells a story.",
+      "Loved buying from Nakhrali. Very elegant pieces and budget friendly. Would highly recommend.",
     rating: 5,
   },
   {
     id: 5,
-    name: "Kavya Reddy",
-    initials: "KR",
+    name: "Fariba F",
+    initials: "FF",
     quote:
-      "From browsing to delivery, the experience was exceptional. My bangles are stunning and truly one-of-a-kind pieces.",
+      "I ordered from Nakhrali, the experience from start to finish was exceptional. The piece I received was exactly as described and matches perfectly with my outfit. Highly recommend!",
+    rating: 5,
+  },
+  {
+    id: 6,
+    name: "Kavya",
+    initials: "KV",
+    quote:
+      "Shoutout to Shivani at Nakhrali for saving the day! I desperately needed a pair of earrings last minute. Reached out to her & she was available in the odd hours. The Kashmiri earrings I got are gorgeous, but her amazing customer service was the real highlight. Thank you for making everything so easy!",
     rating: 5,
   },
 ];
