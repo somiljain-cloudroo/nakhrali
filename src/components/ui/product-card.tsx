@@ -74,6 +74,7 @@ export function ProductCardImages({
             <img
               alt={`${productImage.color} — view 1`}
               src={productImage.images[0]}
+              loading="lazy"
               className="absolute inset-0 h-full w-full object-cover"
             />
 
