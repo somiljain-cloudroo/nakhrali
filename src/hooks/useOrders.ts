@@ -26,6 +26,7 @@ interface CartItem {
   quantity: number;
   unit: string;
   sku: string | null;
+  color: string;
 }
 
 export function useOrders() {
@@ -37,6 +38,12 @@ export function useOrders() {
     shippingPostcode?: string;
     shippingMethod?: string;
     shippingCost?: number;
+    shippingFullName?: string;
+    shippingAddress?: string;
+    shippingSuburb?: string;
+    shippingState?: string;
+    shippingEmail?: string;
+    shippingPhone?: string;
   }
 
   const createOrder = async (cartItems: CartItem[], notes?: string, accountId?: string, shipping?: ShippingInfo): Promise<{ success: boolean; orderId?: string; order?: any; error?: string }> => {
@@ -74,6 +81,12 @@ export function useOrders() {
         shipping_postcode: shipping?.shippingPostcode || null,
         shipping_method: shipping?.shippingMethod || null,
         shipping_cost: Number((shippingCost).toFixed(2)),
+        shipping_full_name: shipping?.shippingFullName || null,
+        shipping_address: shipping?.shippingAddress || null,
+        shipping_suburb: shipping?.shippingSuburb || null,
+        shipping_state: shipping?.shippingState || null,
+        shipping_email: shipping?.shippingEmail || null,
+        shipping_phone: shipping?.shippingPhone || null,
         payment_status: 'unpaid',
         payment_method: 'payid',
       };
@@ -93,6 +106,7 @@ export function useOrders() {
         quantity: item.quantity,
         unit_price: item.price,
         total_price: Number((item.price * item.quantity).toFixed(2)),
+        color: item.color,
       }));
 
       const { error: itemsError } = await supabase
@@ -105,11 +119,16 @@ export function useOrders() {
       supabase.functions.invoke("notify-admin-order", {
         body: {
           orderNumber: orderNumberData,
-          customerName: null,
-          customerEmail: user.email,
+          customerName: shipping?.shippingFullName || null,
+          customerEmail: shipping?.shippingEmail || user.email,
           total: totalAmount,
-          items: cartItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+          items: cartItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price, color: i.color })),
           shippingMethod: shipping?.shippingMethod,
+          shippingAddress: shipping?.shippingAddress,
+          shippingSuburb: shipping?.shippingSuburb,
+          shippingState: shipping?.shippingState,
+          shippingPostcode: shipping?.shippingPostcode,
+          shippingPhone: shipping?.shippingPhone,
         },
       }).then(({ error: fnErr }) => {
         if (fnErr) console.error("notify-admin-order failed:", fnErr);
