@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,13 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Package, Truck, CheckCircle2, Copy, Banknote } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useOrders } from "@/hooks/useOrders";
+import { useAuth } from "@/hooks/useAuth";
 import { AccountSelector } from "./AccountSelector";
 import { supabase } from "@/integrations/supabase/client";
 
 const NAKHRALI_PAYID = "77 440 681 399";
+const AU_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
 
 interface CartItem {
   id: string;
@@ -22,6 +25,7 @@ interface CartItem {
   quantity: number;
   unit: string;
   sku: string | null;
+  color: string;
 }
 
 interface ShippingService {
@@ -31,6 +35,7 @@ interface ShippingService {
 }
 
 interface PlacedOrder {
+  orderId: string;
   orderNumber: string;
   total: number;
 }
@@ -53,16 +58,43 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
   const [shippingLoading, setShippingLoading] = useState(false);
   const [shippingError, setShippingError] = useState("");
 
+  // ── Shipping & contact form state ───────────────────────────────────────
+  const [shippingFullName, setShippingFullName] = useState("");
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [shippingSuburb, setShippingSuburb] = useState("");
+  const [shippingState, setShippingState] = useState("");
+  const [shippingEmail, setShippingEmail] = useState("");
+  const [shippingPhone, setShippingPhone] = useState("");
+
   // ── Step 2 PayID state ───────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2>(1);
   const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
 
   const { createOrder, loading } = useOrders();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingCost = selectedShipping?.price ?? 0;
   const total = subtotal + shippingCost;
+
+  const shippingDetailsComplete = Boolean(
+    shippingFullName.trim() &&
+    shippingAddress.trim() &&
+    shippingSuburb.trim() &&
+    shippingState &&
+    postcode.length === 4 &&
+    shippingEmail.trim() &&
+    shippingPhone.trim()
+  );
+
+  // ── Prefill name/email from profile when the modal opens ────────────────
+  useEffect(() => {
+    if (isOpen) {
+      setShippingFullName((prev) => prev || profile?.full_name || "");
+      setShippingEmail((prev) => prev || user?.email || "");
+    }
+  }, [isOpen, profile, user]);
 
   // ── Reset all state when dialog closes ───────────────────────────────────
   const handleClose = () => {
@@ -74,6 +106,12 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
     setShippingServices([]);
     setSelectedShipping(null);
     setShippingError("");
+    setShippingFullName("");
+    setShippingAddress("");
+    setShippingSuburb("");
+    setShippingState("");
+    setShippingEmail("");
+    setShippingPhone("");
     onClose();
   };
 
@@ -118,6 +156,15 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
       return;
     }
 
+    if (!shippingDetailsComplete) {
+      toast({
+        title: "Shipping Details Required",
+        description: "Please fill in your full name, address, suburb, state, postcode, email, and phone.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!selectedShipping) {
       toast({ title: "Shipping Required", description: "Please enter your postcode and select a shipping option before placing your order.", variant: "destructive" });
       return;
@@ -128,9 +175,15 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
       shippingPostcode: postcode || undefined,
       shippingMethod: selectedShipping?.name,
       shippingCost: shippingCost,
+      shippingFullName,
+      shippingAddress,
+      shippingSuburb,
+      shippingState,
+      shippingEmail,
+      shippingPhone,
     });
 
-    if (!result.success || !result.order) {
+    if (!result.success || !result.order || !result.orderId) {
       console.error("[Checkout] createOrder failed:", result.error);
       toast({
         title: "Order Failed",
@@ -141,7 +194,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
     }
 
     // Order created — show PayID payment instructions
-    setPlacedOrder({ orderNumber: result.order.order_number, total });
+    setPlacedOrder({ orderId: result.orderId, orderNumber: result.order.order_number, total });
     onSuccess(); // clear cart
     setStep(2);
   };
@@ -239,15 +292,86 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
 
               <Separator />
 
-              {/* Shipping Calculator */}
+              {/* Shipping & Contact */}
               <div className="space-y-3">
                 <h3 className="font-semibold flex items-center gap-2">
                   <Truck className="h-4 w-4" />
-                  Shipping
+                  Shipping &amp; Contact
                 </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="shippingFullName">Full Name</Label>
+                    <Input
+                      id="shippingFullName"
+                      placeholder="Recipient's full name"
+                      value={shippingFullName}
+                      onChange={(e) => setShippingFullName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="shippingAddress">Street Address</Label>
+                    <Input
+                      id="shippingAddress"
+                      placeholder="Unit/Street address"
+                      value={shippingAddress}
+                      onChange={(e) => setShippingAddress(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="shippingSuburb">Suburb</Label>
+                    <Input
+                      id="shippingSuburb"
+                      placeholder="Suburb"
+                      value={shippingSuburb}
+                      onChange={(e) => setShippingSuburb(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="shippingState">State</Label>
+                    <Select value={shippingState} onValueChange={setShippingState}>
+                      <SelectTrigger id="shippingState">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AU_STATES.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="shippingEmail">Email</Label>
+                    <Input
+                      id="shippingEmail"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={shippingEmail}
+                      onChange={(e) => setShippingEmail(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="shippingPhone">Phone</Label>
+                    <Input
+                      id="shippingPhone"
+                      type="tel"
+                      placeholder="04xx xxx xxx"
+                      value={shippingPhone}
+                      onChange={(e) => setShippingPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+
                 <div className="flex gap-2">
                   <div className="flex-1">
+                    <Label htmlFor="postcode" className="sr-only">Postcode</Label>
                     <Input
+                      id="postcode"
                       placeholder="Delivery postcode (e.g. 2000)"
                       value={postcode}
                       onChange={(e) => {
@@ -306,7 +430,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
 
                 {shippingServices.length === 0 && !shippingLoading && !shippingError && postcode.length < 4 && (
                   <p className="text-xs text-muted-foreground">
-                    Enter your postcode to see AusPost delivery options from Melbourne.
+                    Enter your postcode above to see AusPost delivery options from Melbourne.
                   </p>
                 )}
               </div>
@@ -357,9 +481,15 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
               </Button>
               <Button
                 type="submit"
-                disabled={loading || cartItems.length === 0 || !selectedShipping}
+                disabled={loading || cartItems.length === 0 || !selectedShipping || !shippingDetailsComplete}
                 className="flex-1 bg-gradient-primary hover:bg-gradient-warm"
-                title={!selectedShipping ? "Calculate shipping first" : undefined}
+                title={
+                  !shippingDetailsComplete
+                    ? "Complete shipping & contact details first"
+                    : !selectedShipping
+                    ? "Calculate shipping first"
+                    : undefined
+                }
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Place Order
@@ -367,7 +497,9 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
             </div>
 
             <div className="text-center text-sm text-muted-foreground pt-2 border-t">
-              {!selectedShipping
+              {!shippingDetailsComplete
+                ? "Fill in your shipping & contact details above."
+                : !selectedShipping
                 ? "Enter your postcode above to calculate shipping before placing your order."
                 : "Your order will be confirmed once payment is received."}
             </div>
