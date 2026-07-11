@@ -201,12 +201,21 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
 
   const handleDone = async () => {
     if (placedOrder) {
+      const { error: paymentUpdateError } = await supabase
+        .from("orders")
+        .update({ payment_status: "paid" })
+        .eq("id", placedOrder.orderId);
+
+      if (paymentUpdateError) {
+        console.error("Failed to mark order paid:", paymentUpdateError);
+      }
+
       // Notify admin that customer has claimed payment
       supabase.functions.invoke("notify-admin-order", {
         body: {
           orderNumber: placedOrder.orderNumber,
-          customerName: null,
-          customerEmail: null,
+          customerName: shippingFullName || null,
+          customerEmail: shippingEmail || null,
           total: placedOrder.total,
           items: [],
           shippingMethod: null,
