@@ -9,7 +9,10 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { orderNumber, customerName, customerEmail, total, items, shippingMethod, paymentClaimed } = await req.json();
+    const {
+      orderNumber, customerName, customerEmail, total, items, shippingMethod, paymentClaimed,
+      shippingAddress, shippingSuburb, shippingState, shippingPostcode, shippingPhone,
+    } = await req.json();
 
     if (!SENDGRID_API_KEY) throw new Error("SENDGRID_API_KEY is not set");
 
@@ -29,8 +32,9 @@ Deno.serve(async (req: Request) => {
                 <h2 style="font-size:16px;color:#1a1510;margin:0 0 16px;">💸 PayID payment claimed</h2>
                 <p style="font-size:14px;color:#5c5040;margin:0 0 8px;">The customer says they have transferred payment for:</p>
                 <p style="font-size:20px;font-weight:700;color:#8b6914;margin:0 0 8px;">Order ${orderNumber}</p>
-                <p style="font-size:18px;color:#1a1510;margin:0 0 24px;"><strong>$${Number(total).toFixed(2)} AUD</strong></p>
-                <p style="font-size:13px;color:#9c8a6a;">Please check your bank account (PayID ABN 77 440 681 399) and confirm receipt, then approve the order in the dashboard.</p>
+                <p style="font-size:18px;color:#1a1510;margin:0 0 8px;"><strong>$${Number(total).toFixed(2)} AUD</strong></p>
+                ${customerName || customerEmail ? `<p style="font-size:13px;color:#5c5040;margin:0 0 24px;">Contact: ${customerName || "—"} · ${customerEmail || "—"}</p>` : ""}
+                <p style="font-size:13px;color:#9c8a6a;">Order status has been marked <strong>Paid</strong>. Please check your bank account (PayID ABN 77 440 681 399) to confirm receipt, then approve the order in the dashboard.</p>
                 <a href="https://nakhrali.com.au/admin" style="display:inline-block;margin-top:20px;padding:10px 24px;background:#c9a84c;color:#fff;text-decoration:none;border-radius:2px;font-size:12px;letter-spacing:0.1em;">Go to Admin Dashboard</a>
               </div>`,
           }],
@@ -43,9 +47,9 @@ Deno.serve(async (req: Request) => {
     }
 
     const itemsHtml = Array.isArray(items)
-      ? items.map((i: { name: string; quantity: number; price: number }) =>
+      ? items.map((i: { name: string; quantity: number; price: number; color?: string }) =>
           `<tr>
-            <td style="padding:6px 0;border-bottom:1px solid #e8e0d0;font-size:13px;color:#3a2e1e;">${i.name}</td>
+            <td style="padding:6px 0;border-bottom:1px solid #e8e0d0;font-size:13px;color:#3a2e1e;">${i.name}${i.color && i.color !== "default" ? ` <span style="color:#9c8a6a;">(${i.color})</span>` : ""}</td>
             <td style="padding:6px 0;border-bottom:1px solid #e8e0d0;font-size:13px;color:#3a2e1e;text-align:center;">${i.quantity}</td>
             <td style="padding:6px 0;border-bottom:1px solid #e8e0d0;font-size:13px;color:#3a2e1e;text-align:right;">$${(i.price * i.quantity).toFixed(2)}</td>
           </tr>`
@@ -86,6 +90,8 @@ Deno.serve(async (req: Request) => {
       <div class="meta">
         <p><strong>Customer:</strong> ${customerName || "—"}</p>
         <p><strong>Email:</strong> ${customerEmail || "—"}</p>
+        ${shippingPhone ? `<p><strong>Phone:</strong> ${shippingPhone}</p>` : ""}
+        ${shippingAddress ? `<p><strong>Ship to:</strong> ${shippingAddress}${shippingSuburb ? `, ${shippingSuburb}` : ""}${shippingState ? ` ${shippingState}` : ""}${shippingPostcode ? ` ${shippingPostcode}` : ""}</p>` : ""}
         ${shippingMethod ? `<p><strong>Shipping:</strong> ${shippingMethod}</p>` : ""}
       </div>
       <table>
