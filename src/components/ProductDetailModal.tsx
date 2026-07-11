@@ -44,7 +44,7 @@ interface ProductDetailModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (product: Product, quantity: number) => void;
+  onAddToCart: (product: Product, quantity: number, color: string) => void;
 }
 
 export function ProductDetailModal({
@@ -75,7 +75,7 @@ export function ProductDetailModal({
 
   const handleAdd = () => {
     if (product) {
-      onAddToCart(product, quantity);
+      onAddToCart(product, quantity, colorImages[activeColor]?.color ?? "default");
       onClose();
     }
   };

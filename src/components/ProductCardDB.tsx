@@ -53,7 +53,7 @@ type Product = Database["public"]["Tables"]["products"]["Row"] & {
 
 interface ProductCardDBProps {
   product: Product;
-  onAddToCart: (product: Product, quantity: number) => void;
+  onAddToCart: (product: Product, quantity: number, color: string) => void;
   onProductClick?: (product: Product) => void;
 }
 
@@ -113,7 +113,10 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
   const glowOpacity = useTransform(mouseX, [0, 350], [0, 0.5]);
 
   const handleQuantityChange = (delta: number) => setQuantity((q) => Math.max(minQty, q + delta));
-  const handleAddToCart = () => { onAddToCart(product, quantity); setQuantity(minQty); };
+  const handleAddToCart = () => {
+    onAddToCart(product, quantity, colorLabels[activeColor] ?? "default");
+    setQuantity(minQty);
+  };
 
   const isInStock = product.stock_quantity > 0;
 
