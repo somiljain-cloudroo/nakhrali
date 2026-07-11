@@ -32,6 +32,7 @@ interface OrderItem {
   quantity: number;
   unit_price: number;
   total_price: number;
+  color: string | null;
   product: { name: string; sku: string | null; unit: string } | null;
 }
 
@@ -39,6 +40,7 @@ interface Order {
   id: string;
   order_number: string;
   status: string;
+  payment_status: string;
   total_amount: number;
   created_at: string;
   notes: string | null;
@@ -46,6 +48,13 @@ interface Order {
   account_id: string | null;
   shipping_method: string | null;
   shipping_cost: number | null;
+  shipping_full_name: string | null;
+  shipping_address: string | null;
+  shipping_suburb: string | null;
+  shipping_state: string | null;
+  shipping_postcode: string | null;
+  shipping_email: string | null;
+  shipping_phone: string | null;
   profiles?: { full_name: string; email: string } | null;
   accounts?: { name: string } | null;
 }
@@ -119,7 +128,7 @@ export const OrderManagement = () => {
     setItemsLoading(true);
     const { data } = await supabase
       .from("order_items")
-      .select("id, quantity, unit_price, total_price, product:products(name, sku, unit)")
+      .select("id, quantity, unit_price, total_price, color, product:products(name, sku, unit)")
       .eq("order_id", order.id);
     setSelectedOrderItems((data as unknown as OrderItem[]) || []);
     setItemsLoading(false);
@@ -193,9 +202,26 @@ export const OrderManagement = () => {
     };
 
     return (
-      <Badge variant={variants[status as keyof typeof variants] || "secondary"} 
+      <Badge variant={variants[status as keyof typeof variants] || "secondary"}
              className={colors[status as keyof typeof colors]}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
+  };
+
+  const getPaymentBadge = (paymentStatus: string) => {
+    const colors: Record<string, string> = {
+      paid: "bg-green-100 text-green-800",
+      unpaid: "bg-orange-100 text-orange-800",
+      pending_payment: "bg-yellow-100 text-yellow-800",
+      failed: "bg-red-100 text-red-800",
+      refunded: "bg-gray-100 text-gray-800",
+    };
+    const label = paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1).replace("_", " ");
+
+    return (
+      <Badge variant="secondary" className={colors[paymentStatus] || "bg-gray-100 text-gray-800"}>
+        {label}
       </Badge>
     );
   };
@@ -268,6 +294,7 @@ export const OrderManagement = () => {
                 <TableHead>Customer</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Payment</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -281,6 +308,7 @@ export const OrderManagement = () => {
                   <TableCell>{getCustomerName(order)}</TableCell>
                   <TableCell>${order.total_amount.toFixed(2)}</TableCell>
                   <TableCell>{getStatusBadge(order.status)}</TableCell>
+                  <TableCell>{getPaymentBadge(order.payment_status)}</TableCell>
                   <TableCell>
                     {format(new Date(order.created_at), "MMM dd, yyyy")}
                   </TableCell>
@@ -314,6 +342,10 @@ export const OrderManagement = () => {
                                   <label className="text-sm font-medium">Total</label>
                                   <p className="text-sm text-muted-foreground">${selectedOrder.total_amount.toFixed(2)}</p>
                                 </div>
+                                <div>
+                                  <label className="text-sm font-medium">Payment</label>
+                                  <p className="text-sm text-muted-foreground">{getPaymentBadge(selectedOrder.payment_status)}</p>
+                                </div>
                                 {selectedOrder.shipping_method && (
                                   <div>
                                     <label className="text-sm font-medium">Shipping</label>
@@ -323,6 +355,25 @@ export const OrderManagement = () => {
                                   </div>
                                 )}
                               </div>
+
+                              {(selectedOrder.shipping_full_name || selectedOrder.shipping_address) && (
+                                <div className="rounded-lg border p-3 bg-muted/30">
+                                  <label className="text-sm font-medium">Shipping To</label>
+                                  <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                                    {selectedOrder.shipping_full_name && <p>{selectedOrder.shipping_full_name}</p>}
+                                    {selectedOrder.shipping_address && (
+                                      <p>
+                                        {selectedOrder.shipping_address}
+                                        {selectedOrder.shipping_suburb && `, ${selectedOrder.shipping_suburb}`}
+                                        {selectedOrder.shipping_state && ` ${selectedOrder.shipping_state}`}
+                                        {selectedOrder.shipping_postcode && ` ${selectedOrder.shipping_postcode}`}
+                                      </p>
+                                    )}
+                                    {selectedOrder.shipping_email && <p>Email: {selectedOrder.shipping_email}</p>}
+                                    {selectedOrder.shipping_phone && <p>Phone: {selectedOrder.shipping_phone}</p>}
+                                  </div>
+                                </div>
+                              )}
 
                               {/* Order items */}
                               <div>
@@ -345,6 +396,9 @@ export const OrderManagement = () => {
                                           <TableCell>
                                             <p className="font-medium text-sm">{item.product?.name ?? "—"}</p>
                                             {item.product?.sku && <p className="text-xs text-muted-foreground">{item.product.sku}</p>}
+                                            {item.color && item.color !== "default" && (
+                                              <p className="text-xs text-muted-foreground">Colour: {item.color}</p>
+                                            )}
                                           </TableCell>
                                           <TableCell className="text-center">{item.quantity} {item.product?.unit}</TableCell>
                                           <TableCell className="text-right">${item.unit_price.toFixed(2)}</TableCell>
