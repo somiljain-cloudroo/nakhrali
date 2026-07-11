@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const NAKHRALI_PAYID = "77 440 681 399";
 const AU_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface CartItem {
   id: string;
@@ -85,12 +86,21 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
     shippingState &&
     postcode.length === 4 &&
     shippingEmail.trim() &&
+    EMAIL_REGEX.test(shippingEmail.trim()) &&
     shippingPhone.trim()
   );
 
-  // ── Prefill name/email from profile when the modal opens ────────────────
+  // ── Prefill name/email from profile once per modal-open session ─────────
+  // Only marks itself "done" once profile/user data has actually arrived, so
+  // an async profile load right after opening still gets one legitimate
+  // prefill — but once that happens (or the user edits/clears the field),
+  // it won't be silently overwritten again for the rest of this open session.
+  const hasPrefilledRef = useRef(false);
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !hasPrefilledRef.current) {
+      if (profile?.full_name || user?.email) {
+        hasPrefilledRef.current = true;
+      }
       setShippingFullName((prev) => prev || profile?.full_name || "");
       setShippingEmail((prev) => prev || user?.email || "");
     }
@@ -112,6 +122,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
     setShippingState("");
     setShippingEmail("");
     setShippingPhone("");
+    hasPrefilledRef.current = false;
     onClose();
   };
 
