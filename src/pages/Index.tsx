@@ -27,6 +27,7 @@ interface CartItem {
   quantity: number;
   unit: string;
   sku: string | null;
+  color: string;
 }
 
 const Index = () => {
@@ -50,17 +51,19 @@ const Index = () => {
   const activeProductCount = products.length;
   const activeCategoryCount = new Set(products.map((p) => p.category_id).filter(Boolean)).size;
 
-  const handleAddToCart = (product: Product, quantity: number) => {
+  const handleAddToCart = (product: Product, quantity: number, color: string) => {
     if (!isAuthenticated) {
       toast({ title: "Sign In Required", description: "Please sign in to add pieces to your bag." });
       setShowAuthModal(true);
       return;
     }
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing = prev.find((item) => item.id === product.id && item.color === color);
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === product.id && item.color === color
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
         );
       }
       return [
@@ -73,19 +76,22 @@ const Index = () => {
           quantity,
           unit: product.unit,
           sku: product.sku,
+          color,
         },
       ];
     });
     toast({ title: "Added to bag", description: `${quantity}× ${product.name}` });
   };
 
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    if (quantity === 0) { handleRemoveItem(id); return; }
-    setCartItems((prev) => prev.map((item) => item.id === id ? { ...item, quantity } : item));
+  const handleUpdateQuantity = (id: string, color: string, quantity: number) => {
+    if (quantity === 0) { handleRemoveItem(id, color); return; }
+    setCartItems((prev) =>
+      prev.map((item) => (item.id === id && item.color === color ? { ...item, quantity } : item))
+    );
   };
 
-  const handleRemoveItem = (id: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveItem = (id: string, color: string) => {
+    setCartItems((prev) => prev.filter((item) => !(item.id === id && item.color === color)));
     toast({ title: "Removed from bag" });
   };
 
