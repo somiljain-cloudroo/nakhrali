@@ -12,12 +12,13 @@ interface CartItem {
   price: number;
   quantity: number;
   unit: string;
+  color: string;
 }
 
 interface CartProps {
   items: CartItem[];
-  onUpdateQuantity: (id: string, quantity: number) => void;
-  onRemoveItem: (id: string) => void;
+  onUpdateQuantity: (id: string, color: string, quantity: number) => void;
+  onRemoveItem: (id: string, color: string) => void;
   onCheckout: () => void;
   trigger: React.ReactNode;
   open?: boolean;
@@ -83,7 +84,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigge
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
               {items.map((item) => (
                 <div
-                  key={item.id}
+                  key={`${item.id}-${item.color}`}
                   className="group flex gap-3 p-3 rounded-xl border border-border/50 bg-card hover:border-border transition-colors duration-150"
                 >
                   {/* Product colour swatch placeholder */}
@@ -100,6 +101,11 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigge
                     <p className="text-sm font-semibold text-card-foreground line-clamp-1 leading-snug">
                       {item.name}
                     </p>
+                    {item.color && item.color !== "default" && (
+                      <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wide mt-0.5">
+                        {item.color}
+                      </p>
+                    )}
                     <p className="text-xs text-muted-foreground mt-0.5">
                       ${item.price.toFixed(2)} / {item.unit}
                     </p>
@@ -107,7 +113,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigge
                     {/* Qty controls */}
                     <div className="flex items-center gap-2 mt-2">
                       <button
-                        onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                        onClick={() => onUpdateQuantity(item.id, item.color, Math.max(1, item.quantity - 1))}
                         className="h-6 w-6 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors duration-150 cursor-pointer"
                       >
                         <Minus className="h-3 w-3" />
@@ -116,7 +122,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigge
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => onUpdateQuantity(item.id, item.color, item.quantity + 1)}
                         className="h-6 w-6 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors duration-150 cursor-pointer"
                       >
                         <Plus className="h-3 w-3" />
@@ -126,7 +132,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout, trigge
 
                   <div className="flex flex-col items-end justify-between shrink-0">
                     <button
-                      onClick={() => onRemoveItem(item.id)}
+                      onClick={() => onRemoveItem(item.id, item.color)}
                       className="h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/8 transition-colors duration-150 cursor-pointer opacity-0 group-hover:opacity-100"
                     >
                       <X className="h-3 w-3" />
