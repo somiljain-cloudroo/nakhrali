@@ -178,9 +178,10 @@ export const OrderManagement = () => {
       setApprovalNotes("");
     } catch (error) {
       console.error("Error updating order:", error);
+      const message = (error as { message?: string })?.message || "Failed to update order status";
       toast({
         title: "Error",
-        description: "Failed to update order status",
+        description: message,
         variant: "destructive",
       });
     }
