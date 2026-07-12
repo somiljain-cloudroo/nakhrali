@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,8 @@ import {
   TrendingUp,
   DollarSign,
   UserPlus,
-  Settings
+  Settings,
+  Percent
 } from "lucide-react";
 import { OrderManagement } from "@/components/admin/OrderManagement";
 import { ProductManagement } from "@/components/admin/ProductManagement";
@@ -21,9 +22,10 @@ import { UserInvitation } from "@/components/admin/UserInvitation";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { AccountContactRelationship } from "@/components/admin/AccountContactRelationship";
+import { DiscountManagement } from "@/components/admin/DiscountManagement";
 
 const AdminDashboard = () => {
-  const { isAdmin, isSalesAdmin, loading } = useAuth();
+  const { isAdmin, isSalesAdmin, loading, profile } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
 
   if (loading) {
@@ -38,7 +40,28 @@ const AdminDashboard = () => {
   }
 
   if (!isAdmin && !isSalesAdmin) {
-    return <Navigate to="/" replace />;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle>Access denied</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              Your account is signed in as <strong>{profile?.role ?? "a non-admin user"}</strong> and does not have permission to access the admin dashboard.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Button asChild className="w-full sm:w-auto">
+                <Link to="/">Go to homepage</Link>
+              </Button>
+              <Button asChild variant="secondary" className="w-full sm:w-auto">
+                <Link to="/profile">View account</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const navigationItems = [
@@ -49,6 +72,7 @@ const AdminDashboard = () => {
     { id: "users", label: "Users", icon: Users },
     { id: "invite", label: "Invite Users", icon: UserPlus },
     { id: "account-contacts", label: "Account Contacts", icon: Settings },
+    { id: "discounts", label: "Discounts", icon: Percent },
   ];
 
   const renderContent = () => {
@@ -67,6 +91,8 @@ const AdminDashboard = () => {
         return <UserInvitation />;
       case "account-contacts":
         return <AccountContactRelationship />;
+      case "discounts":
+        return <DiscountManagement />;
       default:
         return <AdminStats />;
     }
