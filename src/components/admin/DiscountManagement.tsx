@@ -111,7 +111,7 @@ export const DiscountManagement = () => {
         discount_type: formData.discount_type,
         discount_value: discountValue,
         valid_from: formData.valid_from,
-        valid_until: formData.valid_until,
+        valid_until: `${formData.valid_until}T23:59:59`,
         max_uses: formData.max_uses ? parseInt(formData.max_uses) : null,
         is_active: formData.is_active,
       };
@@ -147,11 +147,15 @@ export const DiscountManagement = () => {
 
   const handleToggleActive = async (dc: DiscountCode) => {
     try {
-      const { error } = await supabase
+      const { data: rows, error } = await supabase
         .from("discount_codes")
         .update({ is_active: !dc.is_active })
-        .eq("id", dc.id);
+        .eq("id", dc.id)
+        .select("id");
       if (error) throw error;
+      if (!rows || rows.length === 0) {
+        throw new Error("Update blocked — check your admin permissions");
+      }
       toast({ title: "Success", description: `Discount code ${dc.is_active ? "deactivated" : "activated"}` });
       fetchCodes();
     } catch (error) {

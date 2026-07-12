@@ -239,6 +239,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
 
     if (!result.success || !result.order || !result.orderId) {
       console.error("[Checkout] createOrder failed:", result.error);
+      setAppliedDiscount(null);
       toast({
         title: "Order Failed",
         description: result.error || "An error occurred",

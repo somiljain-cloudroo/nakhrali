@@ -60,9 +60,18 @@ export function useOrders() {
       const taxAmount = 0; // GST included in prices
       const shippingCost = shipping?.shippingCost ?? 0;
 
+      // Generate order number
+      const { data: orderNumberData, error: orderNumberError } = await supabase
+        .rpc('generate_order_number');
+
+      if (orderNumberError) throw orderNumberError;
+
       // Redeem the discount code (if any) — atomic, server-validated, and
       // the authoritative source of the discount amount (never trust the
       // client's earlier preview amount for the actual order total).
+      // Run this as late as possible (after unrelated steps like order
+      // number generation) to minimize the window where a code could be
+      // "spent" without a corresponding order ever being created.
       let discountAmount = 0;
       if (discountCode) {
         const { data: discountData, error: discountError } = await supabase
@@ -73,12 +82,6 @@ export function useOrders() {
       }
 
       const totalAmount = subtotal - discountAmount + shippingCost;
-
-      // Generate order number
-      const { data: orderNumberData, error: orderNumberError } = await supabase
-        .rpc('generate_order_number');
-
-      if (orderNumberError) throw orderNumberError;
 
       // Create order
       const orderData: any = {
