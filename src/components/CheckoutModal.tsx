@@ -67,6 +67,12 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
   const [shippingEmail, setShippingEmail] = useState("");
   const [shippingPhone, setShippingPhone] = useState("");
 
+  // ── Discount code state ─────────────────────────────────────────────────
+  const [discountCodeInput, setDiscountCodeInput] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number; type: string; value: number } | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
+  const [discountError, setDiscountError] = useState("");
+
   // ── Step 2 PayID state ───────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2>(1);
   const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
@@ -77,7 +83,8 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingCost = selectedShipping?.price ?? 0;
-  const total = subtotal + shippingCost;
+  const discountAmount = appliedDiscount?.amount ?? 0;
+  const total = subtotal - discountAmount + shippingCost;
 
   const shippingDetailsComplete = Boolean(
     shippingFullName.trim() &&
@@ -122,6 +129,9 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
     setShippingState("");
     setShippingEmail("");
     setShippingPhone("");
+    setDiscountCodeInput("");
+    setAppliedDiscount(null);
+    setDiscountError("");
     hasPrefilledRef.current = false;
     onClose();
   };
@@ -159,6 +169,39 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
     }
   };
 
+  const handleApplyDiscount = async () => {
+    const trimmed = discountCodeInput.trim();
+    if (!trimmed) return;
+    setDiscountError("");
+    setDiscountLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("check_discount_code", {
+        p_code: trimmed,
+        p_subtotal: subtotal,
+      });
+      if (error) throw new Error(error.message);
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) throw new Error("Discount code not found");
+      setAppliedDiscount({
+        code: trimmed,
+        amount: Number(row.discount_amount),
+        type: row.discount_type,
+        value: Number(row.discount_value),
+      });
+    } catch (err) {
+      setAppliedDiscount(null);
+      setDiscountError(err instanceof Error ? err.message : "Could not apply discount code");
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
+  const handleRemoveDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountCodeInput("");
+    setDiscountError("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -192,7 +235,7 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
       shippingState,
       shippingEmail,
       shippingPhone,
-    });
+    }, appliedDiscount?.code);
 
     if (!result.success || !result.order || !result.orderId) {
       console.error("[Checkout] createOrder failed:", result.error);
@@ -457,12 +500,59 @@ export const CheckoutModal = ({ isOpen, onClose, cartItems, onSuccess }: Checkou
 
               <Separator />
 
+              {/* Discount Code */}
+              <div className="space-y-2">
+                <Label htmlFor="discountCode">Discount Code</Label>
+                {appliedDiscount ? (
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5">
+                    <div>
+                      <p className="text-sm font-medium">{appliedDiscount.code}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {appliedDiscount.type === "percentage"
+                          ? `${appliedDiscount.value}% off`
+                          : `$${appliedDiscount.value.toFixed(2)} off`}
+                      </p>
+                    </div>
+                    <Button type="button" variant="ghost" size="sm" onClick={handleRemoveDiscount}>
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      id="discountCode"
+                      placeholder="Enter code"
+                      value={discountCodeInput}
+                      onChange={(e) => setDiscountCodeInput(e.target.value)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleApplyDiscount}
+                      disabled={discountLoading || !discountCodeInput.trim()}
+                      className="shrink-0"
+                    >
+                      {discountLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                    </Button>
+                  </div>
+                )}
+                {discountError && <p className="text-sm text-destructive">{discountError}</p>}
+              </div>
+
+              <Separator />
+
               {/* Pricing Breakdown */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Subtotal</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
+                {appliedDiscount && (
+                  <div className="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
+                    <span>Discount ({appliedDiscount.code})</span>
+                    <span>-${discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 {selectedShipping && (
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Shipping ({selectedShipping.name})</span>
