@@ -22,6 +22,7 @@ Deno.serve(async (req: Request) => {
     const {
       orderNumber, customerName, customerEmail, total, items, shippingMethod, paymentClaimed,
       shippingAddress, shippingSuburb, shippingState, shippingPostcode, shippingPhone,
+      discountCode, discountAmount,
     } = await req.json();
 
     if (!SENDGRID_API_KEY) throw new Error("SENDGRID_API_KEY is not set");
@@ -103,6 +104,7 @@ Deno.serve(async (req: Request) => {
         ${shippingPhone ? `<p><strong>Phone:</strong> ${escapeHtml(shippingPhone)}</p>` : ""}
         ${shippingAddress ? `<p><strong>Ship to:</strong> ${escapeHtml(shippingAddress)}${shippingSuburb ? `, ${escapeHtml(shippingSuburb)}` : ""}${shippingState ? ` ${escapeHtml(shippingState)}` : ""}${shippingPostcode ? ` ${escapeHtml(shippingPostcode)}` : ""}</p>` : ""}
         ${shippingMethod ? `<p><strong>Shipping:</strong> ${escapeHtml(shippingMethod)}</p>` : ""}
+        ${discountCode ? `<p><strong>Discount:</strong> ${escapeHtml(discountCode)} (-$${Number(discountAmount ?? 0).toFixed(2)})</p>` : ""}
       </div>
       <table>
         <thead>
