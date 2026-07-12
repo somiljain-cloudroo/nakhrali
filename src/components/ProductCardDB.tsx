@@ -19,6 +19,7 @@ import {
   useSetActiveProduct,
   type ProductImagesProps,
 } from "@/components/ui/product-card";
+import { expandColorImages } from "@/lib/productColors";
 
 interface ColorImage {
   color: string;
@@ -63,17 +64,9 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
   const [quantity, setQuantity] = useState(minQty);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Build ProductImagesProps[] from color_images (one image per colour)
-  // If no colour images, fall back to the single image_url
-  const rawColorImages: ColorImage[] = Array.isArray(product.color_images)
-    ? (product.color_images as ColorImage[]).filter((ci) => ci.image_url)
-    : [];
-
-  // Expand entries with multiple images (Multi colour) into individual display slots
-  const expandedColorImages = rawColorImages.flatMap((ci) => {
-    const urls = ci.image_urls && ci.image_urls.length > 1 ? ci.image_urls : [ci.image_url];
-    return urls.filter(Boolean).map((url, i) => ({ color: ci.color, image_url: url, index: i }));
-  });
+  // Expand color_images into one display slot per photo, with disambiguated
+  // labels ("Multi 1", "Multi 2", ...) when a colour has more than one photo.
+  const expandedColorImages = expandColorImages(product.color_images);
 
   const productImages: ProductImagesProps[] = expandedColorImages.length > 0
     ? expandedColorImages.map((ci, i) => ({
@@ -86,7 +79,7 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
       : [];
 
   const cssSwatches = expandedColorImages.map((ci) => COLOR_SWATCHES[ci.color] ?? "#ccc");
-  const colorLabels  = expandedColorImages.map((ci) => ci.color);
+  const colorLabels  = expandedColorImages.map((ci) => ci.label);
 
   // 21st.dev useSetActiveProduct hook drives colour + hover state
   const { activeColor, activeImage, handleColorChange, handleMouse } = useSetActiveProduct();
