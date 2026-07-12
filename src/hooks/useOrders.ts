@@ -46,7 +46,7 @@ export function useOrders() {
     shippingPhone?: string;
   }
 
-  const createOrder = async (cartItems: CartItem[], notes?: string, accountId?: string, shipping?: ShippingInfo): Promise<{ success: boolean; orderId?: string; order?: any; error?: string }> => {
+  const createOrder = async (cartItems: CartItem[], notes?: string, accountId?: string, shipping?: ShippingInfo, discountCode?: string): Promise<{ success: boolean; orderId?: string; order?: any; error?: string }> => {
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -59,7 +59,20 @@ export function useOrders() {
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const taxAmount = 0; // GST included in prices
       const shippingCost = shipping?.shippingCost ?? 0;
-      const totalAmount = subtotal + shippingCost;
+
+      // Redeem the discount code (if any) — atomic, server-validated, and
+      // the authoritative source of the discount amount (never trust the
+      // client's earlier preview amount for the actual order total).
+      let discountAmount = 0;
+      if (discountCode) {
+        const { data: discountData, error: discountError } = await supabase
+          .rpc('redeem_discount_code', { p_code: discountCode, p_subtotal: subtotal });
+        if (discountError) throw discountError;
+        const discountRow = Array.isArray(discountData) ? discountData[0] : discountData;
+        discountAmount = Number(discountRow?.discount_amount ?? 0);
+      }
+
+      const totalAmount = subtotal - discountAmount + shippingCost;
 
       // Generate order number
       const { data: orderNumberData, error: orderNumberError } = await supabase
@@ -77,6 +90,8 @@ export function useOrders() {
         subtotal: Number(subtotal.toFixed(2)),
         tax_amount: Number(taxAmount.toFixed(2)),
         total_amount: Number(totalAmount.toFixed(2)),
+        discount_code: discountCode || null,
+        discount_amount: Number(discountAmount.toFixed(2)),
         notes: notes || null,
         shipping_postcode: shipping?.shippingPostcode || null,
         shipping_method: shipping?.shippingMethod || null,
@@ -129,6 +144,8 @@ export function useOrders() {
           shippingState: shipping?.shippingState,
           shippingPostcode: shipping?.shippingPostcode,
           shippingPhone: shipping?.shippingPhone,
+          discountCode: discountCode || null,
+          discountAmount: discountAmount || null,
         },
       }).then(({ error: fnErr }) => {
         if (fnErr) console.error("notify-admin-order failed:", fnErr);
