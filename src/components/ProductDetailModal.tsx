@@ -12,6 +12,7 @@ import { useSetActiveProduct } from "@/components/ui/product-card";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
+import { expandColorImages } from "@/lib/productColors";
 
 type Product = Database["public"]["Tables"]["products"]["Row"] & {
   category?: Database["public"]["Tables"]["categories"]["Row"];
@@ -56,14 +57,9 @@ export function ProductDetailModal({
   const { isAuthenticated } = useAuth();
   const { activeColor, handleColorChange } = useSetActiveProduct();
 
-  // Expand entries with multiple images (e.g. Multi colour) into individual display slots
-  const colorImages = Array.isArray(product?.color_images)
-    ? (product!.color_images as { color: string; image_url: string; image_urls?: string[] }[])
-        .flatMap((ci) => {
-          const urls = ci.image_urls && ci.image_urls.length > 1 ? ci.image_urls : [ci.image_url];
-          return urls.filter(Boolean).map((url) => ({ color: ci.color, image_url: url }));
-        })
-    : [];
+  // Expand color_images into one display slot per photo, with disambiguated
+  // labels ("Multi 1", "Multi 2", ...) when a colour has more than one photo.
+  const colorImages = expandColorImages(product?.color_images);
 
   const displayImage =
     colorImages[activeColor]?.image_url ?? product?.image_url ?? null;
@@ -75,7 +71,7 @@ export function ProductDetailModal({
 
   const handleAdd = () => {
     if (product) {
-      onAddToCart(product, quantity, colorImages[activeColor]?.color ?? "default");
+      onAddToCart(product, quantity, colorImages[activeColor]?.label ?? "default");
       onClose();
     }
   };
@@ -160,13 +156,13 @@ export function ProductDetailModal({
                 <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-4 pt-12
                                 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
                   <p className="text-[10px] uppercase tracking-[0.18em] text-white/50 mb-2">
-                    {colorImages[activeColor]?.color}
+                    {colorImages[activeColor]?.label}
                   </p>
                   <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                     {colorImages.map((ci, idx) => (
                       <button
-                        key={ci.color}
-                        title={ci.color}
+                        key={ci.label}
+                        title={ci.label}
                         onClick={() => handleColorChange(idx)}
                         className={cn(
                           "flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer",
@@ -177,7 +173,7 @@ export function ProductDetailModal({
                       >
                         <img
                           src={ci.image_url}
-                          alt={ci.color}
+                          alt={ci.label}
                           className="h-full w-full object-cover"
                         />
                       </button>
@@ -227,14 +223,14 @@ export function ProductDetailModal({
                     <p className="text-[11px] uppercase tracking-[0.14em] text-[#71717A]">
                       Colour —{" "}
                       <span className="text-[#09090B] font-medium">
-                        {colorImages[activeColor]?.color}
+                        {colorImages[activeColor]?.label}
                       </span>
                     </p>
                     <div className="flex gap-2.5">
                       {colorImages.map((ci, idx) => (
                         <button
-                          key={ci.color}
-                          title={ci.color}
+                          key={ci.label}
+                          title={ci.label}
                           onClick={() => handleColorChange(idx)}
                           className="relative h-5 w-5 rounded-full border border-black/10 cursor-pointer"
                           style={{ background: COLOR_SWATCHES[ci.color] ?? "#ccc" }}
