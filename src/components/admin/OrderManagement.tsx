@@ -55,6 +55,8 @@ interface Order {
   shipping_postcode: string | null;
   shipping_email: string | null;
   shipping_phone: string | null;
+  discount_code: string | null;
+  discount_amount: number | null;
   profiles?: { full_name: string; email: string } | null;
   accounts?: { name: string } | null;
 }
@@ -352,6 +354,14 @@ export const OrderManagement = () => {
                                     <label className="text-sm font-medium">Shipping</label>
                                     <p className="text-sm text-muted-foreground">
                                       {selectedOrder.shipping_method} — ${(selectedOrder.shipping_cost ?? 0).toFixed(2)}
+                                    </p>
+                                  </div>
+                                )}
+                                {selectedOrder.discount_code && (
+                                  <div>
+                                    <label className="text-sm font-medium">Discount</label>
+                                    <p className="text-sm text-muted-foreground">
+                                      {selectedOrder.discount_code} — -${(selectedOrder.discount_amount ?? 0).toFixed(2)}
                                     </p>
                                   </div>
                                 )}
