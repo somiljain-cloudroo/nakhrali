@@ -34,6 +34,7 @@ import { Plus, Edit, Trash2, RefreshCw, Upload, ImagePlus, X, Check, Palette } f
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import Papa from "papaparse";
+import { expandColorImages } from "@/lib/productColors";
 
 // ── Color options for Indian jewellery ──────────────────────────────────────
 interface ColorOption {
@@ -83,6 +84,7 @@ interface Product {
   image_url: string | null;
   color_images: ColorImage[];
   categories?: { name: string } | null;
+  product_color_stock?: { color: string; stock_quantity: number }[];
 }
 
 interface Category {
@@ -133,6 +135,7 @@ export const ProductManagement = () => {
   });
 
   const [formData, setFormData] = useState<FormData>(emptyForm());
+  const [colorStock, setColorStock] = useState<Record<string, string>>({});
 
   useEffect(() => { fetchData(); }, []);
 
@@ -142,7 +145,7 @@ export const ProductManagement = () => {
       const [productsRes, categoriesRes] = await Promise.all([
         supabase
           .from("products")
-          .select("*, categories (name)")
+          .select("*, categories (name), product_color_stock (color, stock_quantity)")
           .order("created_at", { ascending: false }),
         supabase.from("categories").select("id, name").eq("is_active", true),
       ]);
@@ -168,6 +171,7 @@ export const ProductManagement = () => {
   const resetForm = () => {
     setFormData(emptyForm());
     setEditingProduct(null);
+    setColorStock({});
   };
 
   const handleEdit = (product: Product) => {
@@ -186,6 +190,11 @@ export const ProductManagement = () => {
       color_images: product.color_images || [],
       is_active: product.is_active,
     });
+    const stockMap: Record<string, string> = {};
+    (product.product_color_stock ?? []).forEach((row) => {
+      stockMap[row.color] = row.stock_quantity.toString();
+    });
+    setColorStock(stockMap);
     setIsDialogOpen(true);
   };
 
@@ -299,6 +308,7 @@ export const ProductManagement = () => {
       };
 
       let error: Error | null = null;
+      let savedProductId: string | null = editingProduct?.id ?? null;
       if (editingProduct) {
         const { data: rows, error: updateError } = await supabase
           .from("products")
@@ -310,11 +320,32 @@ export const ProductManagement = () => {
           error = new Error("Update blocked — check your admin permissions");
         }
       } else {
-        const { error: insertError } = await supabase.from("products").insert(productData);
+        const { data: inserted, error: insertError } = await supabase
+          .from("products")
+          .insert(productData)
+          .select("id")
+          .single();
         error = insertError;
+        savedProductId = inserted?.id ?? null;
       }
 
       if (error) throw error;
+
+      // Sync per-colour stock: full replace, scoped to this product, matching
+      // whatever sellable labels currently exist after any photo add/remove.
+      if (savedProductId) {
+        await supabase.from("product_color_stock").delete().eq("product_id", savedProductId);
+        const currentLabels = expandColorImages(formData.color_images).map((ci) => ci.label);
+        if (currentLabels.length > 0) {
+          const stockRows = currentLabels.map((label) => ({
+            product_id: savedProductId,
+            color: label,
+            stock_quantity: parseInt(colorStock[label] || "0") || 0,
+          }));
+          const { error: stockError } = await supabase.from("product_color_stock").insert(stockRows);
+          if (stockError) throw stockError;
+        }
+      }
 
       toast({ title: "Success", description: `Product ${editingProduct ? "updated" : "created"} successfully` });
       setIsDialogOpen(false);
@@ -638,23 +669,36 @@ export const ProductManagement = () => {
                               /* Multi-photo grid */
                               <div className="space-y-2">
                                 <div className="grid grid-cols-3 gap-2">
-                                  {multiUrls.map((url, imgIdx) => (
-                                    <div key={imgIdx} className="relative rounded-lg overflow-hidden border border-border">
-                                      <img
-                                        src={url}
-                                        alt={`${ci.color} ${imgIdx + 1}`}
-                                        className="w-full h-24 object-cover"
-                                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                  {multiUrls.map((url, imgIdx) => {
+                                    const variantLabel = multiUrls.length > 1 ? `${ci.color} ${imgIdx + 1}` : ci.color;
+                                    return (
+                                    <div key={imgIdx} className="space-y-1">
+                                      <div className="relative rounded-lg overflow-hidden border border-border">
+                                        <img
+                                          src={url}
+                                          alt={`${ci.color} ${imgIdx + 1}`}
+                                          className="w-full h-24 object-cover"
+                                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => removeMultiImage(idx, imgIdx)}
+                                          className="absolute top-1 right-1 h-5 w-5 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/80"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      </div>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        placeholder="Stock"
+                                        className="text-[11px] h-7 px-2"
+                                        value={colorStock[variantLabel] ?? ""}
+                                        onChange={(e) => setColorStock({ ...colorStock, [variantLabel]: e.target.value })}
                                       />
-                                      <button
-                                        type="button"
-                                        onClick={() => removeMultiImage(idx, imgIdx)}
-                                        className="absolute top-1 right-1 h-5 w-5 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/80"
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </button>
                                     </div>
-                                  ))}
+                                    );
+                                  })}
                                   {/* Add photo slot */}
                                   <label className="flex flex-col items-center justify-center h-24 rounded-lg border-2 border-dashed border-border cursor-pointer hover:bg-muted/40 transition-colors">
                                     {isUploading ? (
@@ -724,6 +768,14 @@ export const ProductManagement = () => {
                                     updated[idx] = { ...updated[idx], image_url: e.target.value };
                                     setFormData({ ...formData, color_images: updated });
                                   }}
+                                />
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  placeholder="Stock"
+                                  className="text-[11px] h-7 px-2"
+                                  value={colorStock[ci.color] ?? ""}
+                                  onChange={(e) => setColorStock({ ...colorStock, [ci.color]: e.target.value })}
                                 />
                               </>
                             )}
