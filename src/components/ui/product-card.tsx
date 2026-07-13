@@ -118,6 +118,7 @@ interface ProductColorsThumbsProps {
   colorLabels?: string[]         // Human-readable labels e.g. "Gold"
   activeColor: number
   setActiveColor: (index: number) => void
+  soldOut?: boolean[]            // Aligned by index with productColors/colorLabels
   className?: string
 }
 
@@ -127,30 +128,39 @@ export function ProductColorsThumbs({
   colorLabels,
   activeColor,
   setActiveColor,
+  soldOut,
   className,
 }: ProductColorsThumbsProps) {
   return (
     <div className={cn("my-2 flex gap-2 px-1", className)}>
-      {productColors.map((productColor, index) => (
-        <button
-          key={productColor}
-          role="button"
-          aria-label={colorLabels?.[index] ?? `Color ${index + 1}`}
-          title={colorLabels?.[index] ?? productColor}
-          className="relative size-4 appearance-none rounded-full border border-neutral-200 cursor-pointer"
-          style={{ background: productColor }}
-          onMouseEnter={() => setActiveColor(index)}
-          onClick={() => setActiveColor(index)}
-        >
-          {index === activeColor && (
-            <motion.div
-              layoutId={productId}
-              className="absolute -left-[2px] -top-[2px] size-[18px] rounded-full border border-gray-500"
-              transition={springTransition}
-            />
-          )}
-        </button>
-      ))}
+      {productColors.map((productColor, index) => {
+        const isSoldOut = soldOut?.[index] ?? false
+        const label = colorLabels?.[index] ?? `Color ${index + 1}`
+        return (
+          <button
+            key={label}
+            role="button"
+            aria-label={isSoldOut ? `${label} (Sold Out)` : label}
+            title={isSoldOut ? `${label} — Sold Out` : (colorLabels?.[index] ?? productColor)}
+            disabled={isSoldOut}
+            className={cn(
+              "relative size-4 appearance-none rounded-full border border-neutral-200 cursor-pointer",
+              isSoldOut && "opacity-30 cursor-not-allowed"
+            )}
+            style={{ background: productColor }}
+            onMouseEnter={() => !isSoldOut && setActiveColor(index)}
+            onClick={() => !isSoldOut && setActiveColor(index)}
+          >
+            {index === activeColor && (
+              <motion.div
+                layoutId={productId}
+                className="absolute -left-[2px] -top-[2px] size-[18px] rounded-full border border-gray-500"
+                transition={springTransition}
+              />
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }
