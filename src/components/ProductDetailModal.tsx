@@ -68,7 +68,7 @@ export function ProductDetailModal({
   const minQty = product?.min_order_quantity || 1;
   const [quantity, setQuantity] = useState(minQty);
 
-  const soldOutFlags = colorImages.map((ci) => isColorSoldOut(ci.label, product?.product_color_stock));
+  const soldOutFlags = colorImages.map((ci) => isColorSoldOut(ci.label, product?.product_color_stock, product?.stock_quantity));
   const isInStock = colorImages.length > 0
     ? soldOutFlags.some((so) => !so)
     : (product?.stock_quantity ?? 0) > 0;

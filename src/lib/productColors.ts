@@ -38,13 +38,17 @@ export interface ColorStockRow {
   stock_quantity: number;
 }
 
-// A colour with no row yet is treated as in-stock — admin hasn't set a
-// number for it, so don't hide it as sold out by default.
+// A colour with no row yet falls back to the product's own stock_quantity
+// (when provided) — mirroring the approval trigger's own fallback, so a
+// colour never shows "available" on the storefront when the trigger would
+// actually reject an order for it. With no fallback provided, a rowless
+// colour is treated as in-stock (admin hasn't set a number for it yet).
 export function isColorSoldOut(
   label: string,
-  stockRows: ColorStockRow[] | null | undefined
+  stockRows: ColorStockRow[] | null | undefined,
+  fallbackStock?: number
 ): boolean {
-  if (!stockRows) return false;
-  const row = stockRows.find((r) => r.color === label);
-  return row ? row.stock_quantity <= 0 : false;
+  const row = stockRows?.find((r) => r.color === label);
+  if (row) return row.stock_quantity <= 0;
+  return fallbackStock !== undefined ? fallbackStock <= 0 : false;
 }

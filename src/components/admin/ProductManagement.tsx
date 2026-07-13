@@ -334,7 +334,11 @@ export const ProductManagement = () => {
       // Sync per-colour stock: full replace, scoped to this product, matching
       // whatever sellable labels currently exist after any photo add/remove.
       if (savedProductId) {
-        await supabase.from("product_color_stock").delete().eq("product_id", savedProductId);
+        const { error: deleteStockError } = await supabase
+          .from("product_color_stock")
+          .delete()
+          .eq("product_id", savedProductId);
+        if (deleteStockError) throw deleteStockError;
         const currentLabels = expandColorImages(formData.color_images).map((ci) => ci.label);
         if (currentLabels.length > 0) {
           const stockRows = currentLabels.map((label) => ({

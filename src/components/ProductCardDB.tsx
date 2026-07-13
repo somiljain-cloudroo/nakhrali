@@ -81,7 +81,7 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
 
   const cssSwatches = expandedColorImages.map((ci) => COLOR_SWATCHES[ci.color] ?? "#ccc");
   const colorLabels  = expandedColorImages.map((ci) => ci.label);
-  const soldOutFlags = expandedColorImages.map((ci) => isColorSoldOut(ci.label, product.product_color_stock));
+  const soldOutFlags = expandedColorImages.map((ci) => isColorSoldOut(ci.label, product.product_color_stock, product.stock_quantity));
 
   // 21st.dev useSetActiveProduct hook drives colour + hover state
   const { activeColor, activeImage, handleColorChange, handleMouse } = useSetActiveProduct();
