@@ -32,3 +32,19 @@ export function expandColorImages(
     return { ...ci, label };
   });
 }
+
+export interface ColorStockRow {
+  color: string;
+  stock_quantity: number;
+}
+
+// A colour with no row yet is treated as in-stock — admin hasn't set a
+// number for it, so don't hide it as sold out by default.
+export function isColorSoldOut(
+  label: string,
+  stockRows: ColorStockRow[] | null | undefined
+): boolean {
+  if (!stockRows) return false;
+  const row = stockRows.find((r) => r.color === label);
+  return row ? row.stock_quantity <= 0 : false;
+}
