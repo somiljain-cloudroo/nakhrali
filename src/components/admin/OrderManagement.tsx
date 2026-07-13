@@ -24,7 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Check, X, RefreshCw } from "lucide-react";
+import { Eye, Check, X, RefreshCw, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderItem {
@@ -181,6 +181,36 @@ export const OrderManagement = () => {
     } catch (error) {
       console.error("Error updating order:", error);
       const message = (error as { message?: string })?.message || "Failed to update order status";
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteOrder = async (orderId: string) => {
+    if (!confirm("Permanently delete this approved order? This cannot be undone. Any stock it consumed will be restored.")) return;
+    try {
+      const { data: rows, error } = await supabase
+        .from("orders")
+        .delete()
+        .eq("id", orderId)
+        .select("id");
+
+      if (error) throw error;
+      if (!rows || rows.length === 0) throw new Error("Delete blocked — check your admin permissions");
+
+      toast({
+        title: "Success",
+        description: "Order deleted",
+      });
+
+      fetchOrders();
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      const message = (error as { message?: string })?.message || "Failed to delete order";
       toast({
         title: "Error",
         description: message,
@@ -453,6 +483,17 @@ export const OrderManagement = () => {
                               >
                                 <Check className="h-4 w-4 mr-2" />
                                 Approve
+                              </Button>
+                            </DialogFooter>
+                          )}
+                          {selectedOrder?.status === 'approved' && (
+                            <DialogFooter className="gap-2">
+                              <Button
+                                variant="destructive"
+                                onClick={() => deleteOrder(selectedOrder.id)}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Reject &amp; Delete
                               </Button>
                             </DialogFooter>
                           )}
