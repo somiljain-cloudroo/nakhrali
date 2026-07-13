@@ -4,6 +4,7 @@ import { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   category?: Database['public']['Tables']['categories']['Row'];
+  product_color_stock?: { color: string; stock_quantity: number }[];
 };
 
 type Category = Database['public']['Tables']['categories']['Row'];
@@ -44,7 +45,8 @@ export function useProducts() {
         .from('products')
         .select(`
           *,
-          category:categories(*)
+          category:categories(*),
+          product_color_stock(color, stock_quantity)
         `)
         .eq('is_active', true)
         .order('name');
