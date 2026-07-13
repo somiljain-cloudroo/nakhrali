@@ -19,7 +19,7 @@ import {
   useSetActiveProduct,
   type ProductImagesProps,
 } from "@/components/ui/product-card";
-import { expandColorImages } from "@/lib/productColors";
+import { expandColorImages, isColorSoldOut } from "@/lib/productColors";
 
 interface ColorImage {
   color: string;
@@ -50,6 +50,7 @@ const COLOR_SWATCHES: Record<string, string> = {
 type Product = Database["public"]["Tables"]["products"]["Row"] & {
   category?: Database["public"]["Tables"]["categories"]["Row"];
   color_images?: ColorImage[];
+  product_color_stock?: { color: string; stock_quantity: number }[];
 };
 
 interface ProductCardDBProps {
@@ -80,6 +81,7 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
 
   const cssSwatches = expandedColorImages.map((ci) => COLOR_SWATCHES[ci.color] ?? "#ccc");
   const colorLabels  = expandedColorImages.map((ci) => ci.label);
+  const soldOutFlags = expandedColorImages.map((ci) => isColorSoldOut(ci.label, product.product_color_stock));
 
   // 21st.dev useSetActiveProduct hook drives colour + hover state
   const { activeColor, activeImage, handleColorChange, handleMouse } = useSetActiveProduct();
@@ -111,7 +113,10 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
     setQuantity(minQty);
   };
 
-  const isInStock = product.stock_quantity > 0;
+  const isInStock = expandedColorImages.length > 0
+    ? soldOutFlags.some((so) => !so)
+    : product.stock_quantity > 0;
+  const activeColorSoldOut = soldOutFlags[activeColor] ?? false;
 
   return (
     <motion.div
@@ -189,6 +194,7 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
           colorLabels={colorLabels}
           activeColor={activeColor}
           setActiveColor={handleColorChange}
+          soldOut={soldOutFlags}
           className="px-4 pt-2 pb-0"
         />
       )}
@@ -217,7 +223,7 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
         </div>
 
         {/* CTA */}
-        {isAuthenticated && isInStock ? (
+        {isAuthenticated && isInStock && !activeColorSoldOut ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <motion.button
@@ -247,6 +253,10 @@ export const ProductCardDB = ({ product, onAddToCart, onProductClick }: ProductC
               Add to Bag
             </motion.button>
           </div>
+        ) : isAuthenticated && isInStock && activeColorSoldOut ? (
+          <Button variant="outline" className="w-full h-9 rounded-xl text-sm font-medium text-muted-foreground" disabled>
+            Select an available colour
+          </Button>
         ) : !isAuthenticated ? (
           <Button variant="outline" className="w-full h-9 rounded-xl text-sm font-medium border-dashed" disabled>
             <Lock className="h-3.5 w-3.5 mr-1.5" />Login to Order
