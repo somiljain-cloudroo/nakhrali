@@ -651,6 +651,10 @@ export const ProductManagement = () => {
                         const isUploading = uploadingColorIndex === idx;
                         const isMulti = MULTI_PHOTO_COLORS.includes(ci.color);
                         const multiUrls = ci.image_urls ?? (ci.image_url ? [ci.image_url] : []);
+                        // Same label computation the storefront uses (expandColorImages),
+                        // scoped to just this colour, so admin's stock inputs are keyed
+                        // identically to what product_color_stock lookups will match.
+                        const variantEntries = expandColorImages([ci]);
 
                         return (
                           <div key={ci.color} className={`space-y-1.5 ${isMulti ? "col-span-2" : ""}`}>
@@ -670,7 +674,7 @@ export const ProductManagement = () => {
                               <div className="space-y-2">
                                 <div className="grid grid-cols-3 gap-2">
                                   {multiUrls.map((url, imgIdx) => {
-                                    const variantLabel = multiUrls.length > 1 ? `${ci.color} ${imgIdx + 1}` : ci.color;
+                                    const variantLabel = variantEntries[imgIdx]?.label ?? ci.color;
                                     return (
                                     <div key={imgIdx} className="space-y-1">
                                       <div className="relative rounded-lg overflow-hidden border border-border">
