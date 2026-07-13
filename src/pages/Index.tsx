@@ -312,6 +312,15 @@ const Index = () => {
             </a>
           </div>
 
+          {/* Contact email */}
+          <a href="mailto:admin@nakhrali.com.au"
+             className="text-[10px] uppercase tracking-[0.18em] transition-opacity duration-200"
+             style={{ color: "rgba(184,150,12,0.6)" }}
+             onMouseEnter={e => (e.currentTarget.style.color = "rgba(184,150,12,1)")}
+             onMouseLeave={e => (e.currentTarget.style.color = "rgba(184,150,12,0.6)")}>
+            admin@nakhrali.com.au
+          </a>
+
           {/* Bottom row */}
           <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-2">
             <p className="text-[10px] uppercase tracking-[0.22em]" style={{ color: "rgba(184,150,12,0.7)" }}>
