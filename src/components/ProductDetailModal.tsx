@@ -12,11 +12,12 @@ import { useSetActiveProduct } from "@/components/ui/product-card";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
-import { expandColorImages } from "@/lib/productColors";
+import { expandColorImages, isColorSoldOut } from "@/lib/productColors";
 
 type Product = Database["public"]["Tables"]["products"]["Row"] & {
   category?: Database["public"]["Tables"]["categories"]["Row"];
   color_images?: { color: string; image_url: string; image_urls?: string[] }[];
+  product_color_stock?: { color: string; stock_quantity: number }[];
 };
 
 const COLOR_SWATCHES: Record<string, string> = {
@@ -67,7 +68,11 @@ export function ProductDetailModal({
   const minQty = product?.min_order_quantity || 1;
   const [quantity, setQuantity] = useState(minQty);
 
-  const isInStock = (product?.stock_quantity ?? 0) > 0;
+  const soldOutFlags = colorImages.map((ci) => isColorSoldOut(ci.label, product?.product_color_stock));
+  const isInStock = colorImages.length > 0
+    ? soldOutFlags.some((so) => !so)
+    : (product?.stock_quantity ?? 0) > 0;
+  const activeColorSoldOut = soldOutFlags[activeColor] ?? false;
 
   const handleAdd = () => {
     if (product) {
@@ -159,25 +164,37 @@ export function ProductDetailModal({
                     {colorImages[activeColor]?.label}
                   </p>
                   <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                    {colorImages.map((ci, idx) => (
-                      <button
-                        key={ci.label}
-                        title={ci.label}
-                        onClick={() => handleColorChange(idx)}
-                        className={cn(
-                          "flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer",
-                          activeColor === idx
-                            ? "border-white/90 shadow-[0_0_12px_rgba(255,255,255,0.2)]"
-                            : "border-white/20 opacity-60 hover:opacity-100 hover:border-white/50"
-                        )}
-                      >
-                        <img
-                          src={ci.image_url}
-                          alt={ci.label}
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ))}
+                    {colorImages.map((ci, idx) => {
+                      const isSoldOut = soldOutFlags[idx];
+                      return (
+                        <button
+                          key={ci.label}
+                          title={isSoldOut ? `${ci.label} — Sold Out` : ci.label}
+                          disabled={isSoldOut}
+                          onClick={() => !isSoldOut && handleColorChange(idx)}
+                          className={cn(
+                            "relative flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden border-2 transition-all duration-200",
+                            isSoldOut
+                              ? "border-white/10 opacity-30 cursor-not-allowed"
+                              : "cursor-pointer",
+                            !isSoldOut && activeColor === idx
+                              ? "border-white/90 shadow-[0_0_12px_rgba(255,255,255,0.2)]"
+                              : !isSoldOut && "border-white/20 opacity-60 hover:opacity-100 hover:border-white/50"
+                          )}
+                        >
+                          <img
+                            src={ci.image_url}
+                            alt={ci.label}
+                            className="h-full w-full object-cover"
+                          />
+                          {isSoldOut && (
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-[8px] uppercase tracking-wide text-white">
+                              Sold Out
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -227,23 +244,30 @@ export function ProductDetailModal({
                       </span>
                     </p>
                     <div className="flex gap-2.5">
-                      {colorImages.map((ci, idx) => (
-                        <button
-                          key={ci.label}
-                          title={ci.label}
-                          onClick={() => handleColorChange(idx)}
-                          className="relative h-5 w-5 rounded-full border border-black/10 cursor-pointer"
-                          style={{ background: COLOR_SWATCHES[ci.color] ?? "#ccc" }}
-                        >
-                          {activeColor === idx && (
-                            <motion.div
-                              layoutId={`detail-swatch-${product.id}`}
-                              className="absolute -inset-[3px] rounded-full border-2 border-[#09090B]/60"
-                              transition={springTransition}
-                            />
-                          )}
-                        </button>
-                      ))}
+                      {colorImages.map((ci, idx) => {
+                        const isSoldOut = soldOutFlags[idx]
+                        return (
+                          <button
+                            key={ci.label}
+                            title={isSoldOut ? `${ci.label} — Sold Out` : ci.label}
+                            disabled={isSoldOut}
+                            onClick={() => !isSoldOut && handleColorChange(idx)}
+                            className={cn(
+                              "relative h-5 w-5 rounded-full border border-black/10",
+                              isSoldOut ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
+                            )}
+                            style={{ background: COLOR_SWATCHES[ci.color] ?? "#ccc" }}
+                          >
+                            {!isSoldOut && activeColor === idx && (
+                              <motion.div
+                                layoutId={`detail-swatch-${product.id}`}
+                                className="absolute -inset-[3px] rounded-full border-2 border-[#09090B]/60"
+                                transition={springTransition}
+                              />
+                            )}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
                 )}
@@ -280,7 +304,7 @@ export function ProductDetailModal({
                   )}
 
                   {isAuthenticated ? (
-                    isInStock ? (
+                    isInStock && !activeColorSoldOut ? (
                       <div className="flex items-center gap-3">
                         {/* Qty */}
                         <div className="flex items-center rounded-xl border border-[#E4E4E7] bg-white">
@@ -316,6 +340,14 @@ export function ProductDetailModal({
                           Add to Bag
                         </motion.button>
                       </div>
+                    ) : isInStock && activeColorSoldOut ? (
+                      <button
+                        disabled
+                        className="w-full h-10 rounded-xl text-sm font-medium text-[#A1A1AA]
+                                   border border-[#E4E4E7] bg-white cursor-not-allowed"
+                      >
+                        Select an available colour
+                      </button>
                     ) : (
                       <button
                         disabled
