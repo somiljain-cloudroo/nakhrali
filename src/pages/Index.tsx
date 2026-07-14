@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { ProductCardDB } from "@/components/ProductCardDB";
@@ -50,6 +50,18 @@ const Index = () => {
   const filteredProducts = getProductsByCategory(selectedCategory);
   const activeProductCount = products.length;
   const activeCategoryCount = new Set(products.map((p) => p.category_id).filter(Boolean)).size;
+
+  useEffect(() => {
+    const redirectType = sessionStorage.getItem("nakhrali_auth_redirect_type");
+    if (!redirectType) return;
+    sessionStorage.removeItem("nakhrali_auth_redirect_type");
+    if (redirectType === "signup") {
+      toast({
+        title: "Email confirmed!",
+        description: "Your sign-up is complete — welcome to Nakhrali.",
+      });
+    }
+  }, [toast]);
 
   const handleAddToCart = (product: Product, quantity: number, color: string) => {
     if (!isAuthenticated) {

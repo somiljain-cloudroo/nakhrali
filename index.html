@@ -41,6 +41,18 @@
     fbq('track', 'PageView');
     </script>
     <!-- End Meta Pixel Code -->
+
+    <!-- Capture Supabase auth redirect type (e.g. type=signup) from the URL
+         hash before the app bundle loads and Supabase strips it. -->
+    <script>
+      (function () {
+        var hash = window.location.hash || "";
+        var match = hash.match(/type=([a-z]+)/);
+        if (match && hash.indexOf("access_token") !== -1) {
+          sessionStorage.setItem("nakhrali_auth_redirect_type", match[1]);
+        }
+      })();
+    </script>
   </head>
 
   <body>
