@@ -53,6 +53,7 @@ const JEWELLERY_COLORS: ColorOption[] = [
   { value: "Beige",      swatch: "#D9C4A0" },
   { value: "Multi",      swatch: "linear-gradient(135deg, #F4A7B9 20%, #7B4F9E 20% 40%, #3A7D44 40% 60%, #D4AF37 60% 80%, #1B6CA8 80%)" },
   { value: "Kundan",     swatch: "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, #aee6ff 25%, rgba(255,255,255,0.8) 45%, #ffb7d5 65%, rgba(255,255,255,0.95) 80%, #c8b6ff 100%)" },
+  { value: "Polki",      swatch: "linear-gradient(135deg, rgba(255,250,235,0.95) 0%, #e6c874 30%, rgba(255,248,220,0.85) 55%, #b8860b 80%, rgba(255,250,235,0.95) 100%)" },
   { value: "Golden",     swatch: "#C9A84C" },
   { value: "Blue",       swatch: "#1B6CA8" },
   { value: "Maroon",     swatch: "#800020" },
